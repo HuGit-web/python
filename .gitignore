@@ -1,0 +1,6 @@
+data/*.json
+data/*.csv
+
+git rm --cached data/bib.json data/catalogue.csv
+git commit -m "Ignore generated data files"
+git push

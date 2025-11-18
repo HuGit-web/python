@@ -4,10 +4,10 @@ from typing import Optional
 
 def create_demo_library() -> Bibliotheque:
     b = Bibliotheque("Demo Bibliotheque")
-    b.ajouter_livre(Livre("1984", "George Orwell", "ISBN123"))
-    b.ajouter_livre(Livre("Les Miserables", "Victor Hugo", "ISBN456"))
-    b.ajouter_livre(Livre("Le Petit Prince", "Antoine de Saint-Exupery", "ISBN789"))
-    b.ajouter_livre(LivreNumerique("Digital Fortress", "Dan Brown", "ISBN101", "2MB"))
+    b.ajouter_livre(Livre("Seigneur des anneux", "John Tolkien", "9788845292613"))
+    b.ajouter_livre(Livre("Harry Potter", "J.K. Rowling", "9780747532743"))
+    b.ajouter_livre(Livre("Les Rois maudits", "Maurice Druon", "9782253005553"))
+    b.ajouter_livre(Livre("King in yellow", "Stephen King", "9781501142970"))
     return b
 
 def save_library(bibliotheque: Bibliotheque, path: str) -> None:
@@ -40,10 +40,10 @@ def run_tp1_demo() -> None:
 
     ma_bibliotheque = Bibliotheque("La Bible aux Tcheques")
     # sample books
-    livre1 = Livre("1984", "George Orwell", "ISBN123")
-    livre2 = Livre("Les Miserables", "Victor Hugo", "ISBN456")
-    livre3 = Livre("Le Petit Prince", "Antoine de Saint-Exupery", "ISBN789")
-    livre4 = LivreNumerique("Digital Fortress", "Dan Brown", "ISBN101", "2MB")
+    livre1 = Livre("Seigneur des anneux", "John Tolkien", "9788845292613")
+    livre2 = Livre("Harry Potter", "J.K. Rowling", "9780747532743")
+    livre3 = Livre("Les Rois maudits", "Maurice Druon", "9782253005553")
+    livre4 = Livre("King in yellow", "Stephen King", "9781501142970")
 
     # add books
     ma_bibliotheque.ajouter_livre(livre1)
