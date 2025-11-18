@@ -61,14 +61,17 @@ def run_tp1_demo() -> None:
     ma_bibliotheque.ajouter_livre(livre3)
     ma_bibliotheque.ajouter_livre(livre4)
 
+    # Affiche les livres ajoutés
+    ma_bibliotheque.afficher()
+
     # search by title
     resultats = ma_bibliotheque.recherche_par_titre("1984")
     for livre in resultats:
         print(f"Trouve : {livre.titre} par {livre.auteur}")
 
-    # suppression
+    # suppression (ne pas afficher quel livre a ete supprime)
     if ma_bibliotheque.supprimer_livre("9788845292613"):
-        print("Suppression reussie pour 9788845292613")
+        print("Suppression effectuee")
     else:
         print("Livre a supprimer non trouve")
 
@@ -76,6 +79,7 @@ def run_tp1_demo() -> None:
     resultats = ma_bibliotheque.recherche_par_auteur("John Tolkien")
     for livre in resultats:
         print(f"Trouve : {livre.titre} par {livre.auteur}")
+    
 
     # persistence
     bib_path = data_dir / "bib.json"
@@ -97,6 +101,9 @@ def run_tp1_demo() -> None:
         print(f"Chargement depuis '{bib_path}' reussi")
     except Exception as e:
         print(f"Erreur chargement: {e}")
+    else:
+        # Affiche la bibliotheque rechargée
+        ma_bibliotheque.afficher()
 
 if __name__ == "__main__":
     main_demo()

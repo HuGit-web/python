@@ -17,6 +17,12 @@ class Livre:
             "ISBN": self.ISBN,
         }
 
+    def __str__(self) -> str:
+        return f"{self.titre} — {self.auteur} (ISBN: {self.ISBN})"
+
+    def __repr__(self) -> str:
+        return f"Livre(titre={self.titre!r}, auteur={self.auteur!r}, ISBN={self.ISBN!r})"
+
 class LivreNumerique(Livre):
     def __init__(self, titre: str, auteur: str, ISBN: str, taille_fichier: str):
         super().__init__(titre, auteur, ISBN)
@@ -28,6 +34,13 @@ class LivreNumerique(Livre):
         base["taille_fichier"] = self.taille_fichier
         return base
 
+    def __str__(self) -> str:
+        return f"{self.titre} — {self.auteur} (ISBN: {self.ISBN}, {self.taille_fichier})"
+
+    def __repr__(self) -> str:
+        return (f"LivreNumerique(titre={self.titre!r}, auteur={self.auteur!r}, "
+                f"ISBN={self.ISBN!r}, taille_fichier={self.taille_fichier!r})")
+
 class Bibliotheque:
     def __init__(self, nom: str):
         self.nom = nom
@@ -35,6 +48,19 @@ class Bibliotheque:
 
     def ajouter_livre(self, livre: Livre) -> None:
         self.livres.append(livre)
+
+    def afficher(self) -> None:
+        """Affiche la liste des livres présents dans la bibliothèque."""
+        if not self.livres:
+            print(f"Bibliotheque '{self.nom}' est vide.")
+            return
+        print(f"Livres dans la bibliotheque '{self.nom}':")
+        for i, livre in enumerate(self.livres, start=1):
+            print(f" {i}. {livre}")
+
+    def lister(self) -> list:
+        """Retourne la liste des livres (objets)."""
+        return list(self.livres)
 
     def supprimer_livre(self, ISBN: str) -> bool:
         for livre in list(self.livres):
