@@ -1,0 +1,4 @@
+type,titre,auteur,ISBN,taille_fichier
+Livre,1984,George Orwell,ISBN123,
+Livre,Les Miserables,Victor Hugo,ISBN456,
+Livre Numerique,Digital Fortress,Dan Brown,ISBN101,2MB

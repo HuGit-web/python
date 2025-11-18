@@ -1,0 +1,21 @@
+[
+  {
+    "type": "Livre",
+    "titre": "1984",
+    "auteur": "George Orwell",
+    "ISBN": "ISBN123"
+  },
+  {
+    "type": "Livre",
+    "titre": "Le Petit Prince",
+    "auteur": "Antoine de Saint-Exupéry",
+    "ISBN": "ISBN789"
+  },
+  {
+    "type": "Livre Numerique",
+    "titre": "Digital Fortress",
+    "auteur": "Dan Brown",
+    "ISBN": "ISBN101",
+    "taille_fichier": "2MB"
+  }
+]
