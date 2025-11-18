@@ -1,5 +1,15 @@
 from pathlib import Path
-from .models import Livre, LivreNumerique, Bibliotheque
+import sys
+try:
+    # when used as a package (recommended)
+    from .models import Livre, LivreNumerique, Bibliotheque
+except Exception:
+    # when executed directly (python src/interface.py) fall back to absolute import
+    # ensure project root is on sys.path so `import src` works
+    project_root = Path(__file__).resolve().parents[1]
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
+    from src.models import Livre, LivreNumerique, Bibliotheque
 from typing import Optional
 
 def create_demo_library() -> Bibliotheque:
@@ -38,7 +48,7 @@ def run_tp1_demo() -> None:
     data_dir = project_root / "data"
     data_dir.mkdir(parents=True, exist_ok=True)
 
-    ma_bibliotheque = Bibliotheque("La Bible aux Tcheques")
+    ma_bibliotheque = Bibliotheque("Le tiroire")
     # sample books
     livre1 = Livre("Seigneur des anneux", "John Tolkien", "9788845292613")
     livre2 = Livre("Harry Potter", "J.K. Rowling", "9780747532743")
@@ -57,13 +67,13 @@ def run_tp1_demo() -> None:
         print(f"Trouve : {livre.titre} par {livre.auteur}")
 
     # suppression
-    if ma_bibliotheque.supprimer_livre("ISBN456"):
-        print("Suppression reussie pour ISBN456")
+    if ma_bibliotheque.supprimer_livre("9788845292613"):
+        print("Suppression reussie pour 9788845292613")
     else:
         print("Livre a supprimer non trouve")
 
     # recherche par auteur
-    resultats = ma_bibliotheque.recherche_par_auteur("Victor Hugo")
+    resultats = ma_bibliotheque.recherche_par_auteur("John Tolkien")
     for livre in resultats:
         print(f"Trouve : {livre.titre} par {livre.auteur}")
 
