@@ -75,7 +75,6 @@ class Bibliotheque:
     def recherche_par_auteur(self, auteur: str):
         return [livre for livre in self.livres if livre.auteur == auteur]
 
-    # JSON
     def sauvegarder(self, filepath: str) -> None:
         p = Path(filepath)
         p.parent.mkdir(parents=True, exist_ok=True)
@@ -86,7 +85,6 @@ class Bibliotheque:
         except OSError as e:
             raise OSError(f"Erreur ecriture fichier: {e}")
 
-    # Chargement
     def charger(self, filepath: str) -> None:
         p = Path(filepath)
         if not p.exists():
@@ -116,7 +114,6 @@ class Bibliotheque:
                 )
             self.livres.append(livre)
 
-    # CSV
     def export_csv(self, filepath: str) -> None:
         p = Path(filepath)
         p.parent.mkdir(parents=True, exist_ok=True)

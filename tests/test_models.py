@@ -22,7 +22,6 @@ def test_bibliotheque_crud(tmp_path):
     assert len(b.livres) == 2
     assert b.supprimer_livre("I1") is True
     assert len(b.livres) == 1
-    # save and load
     p = tmp_path / "biblio.json"
     b.sauvegarder(str(p))
     b2 = Bibliotheque("Reloaded")

@@ -1,11 +1,8 @@
 from pathlib import Path
 import sys
 try:
-    # when used as a package (recommended)
     from .models import Livre, LivreNumerique, Bibliotheque
 except Exception:
-    # when executed directly (python src/interface.py) fall back to absolute import
-    # ensure project root is on sys.path so `import src` works
     project_root = Path(__file__).resolve().parents[1]
     if str(project_root) not in sys.path:
         sys.path.insert(0, str(project_root))
@@ -32,7 +29,6 @@ def export_library_csv(bibliotheque: Bibliotheque, path: str) -> None:
     bibliotheque.export_csv(path)
 
 def main_demo() -> None:
-    # Keep main_demo as a simple entry that runs the TP1-style demo
     run_tp1_demo()
 
 
@@ -49,39 +45,33 @@ def run_tp1_demo() -> None:
     data_dir.mkdir(parents=True, exist_ok=True)
 
     ma_bibliotheque = Bibliotheque("Le tiroire")
-    # sample books
-    livre1 = Livre("Seigneur des anneux", "John Tolkien", "9788845292613")
-    livre2 = Livre("Harry Potter", "J.K. Rowling", "9780747532743")
-    livre3 = Livre("Les Rois maudits", "Maurice Druon", "9782253005553")
-    livre4 = Livre("King in yellow", "Stephen King", "9781501142970")
 
-    # add books
+    livre1 = Livre("Seigneur des anneux", "John Tolkien", "9788845292613")
+    livre2 = Livre("Harry Potter ", "J.K. Rowling ", "9780747532743 ")
+    livre3 = Livre("Les Rois maudits ", "Maurice Druon ", "9782253005553 ")
+    livre4 = Livre("King in yellow ", "Stephen King ", "9781501142970 ")
+
     ma_bibliotheque.ajouter_livre(livre1)
     ma_bibliotheque.ajouter_livre(livre2)
     ma_bibliotheque.ajouter_livre(livre3)
     ma_bibliotheque.ajouter_livre(livre4)
 
-    # Affiche les livres ajoutés
     ma_bibliotheque.afficher()
 
-    # search by title
-    resultats = ma_bibliotheque.recherche_par_titre("1984")
+    resultats = ma_bibliotheque.recherche_par_titre("King in yellow ")
     for livre in resultats:
         print(f"Trouve : {livre.titre} par {livre.auteur}")
 
-    # suppression (ne pas afficher quel livre a ete supprime)
     if ma_bibliotheque.supprimer_livre("9788845292613"):
         print("Suppression effectuee")
     else:
         print("Livre a supprimer non trouve")
 
-    # recherche par auteur
     resultats = ma_bibliotheque.recherche_par_auteur("John Tolkien")
     for livre in resultats:
         print(f"Trouve : {livre.titre} par {livre.auteur}")
     
 
-    # persistence
     bib_path = data_dir / "bib.json"
     csv_path = data_dir / "catalogue.csv"
     try:
@@ -102,7 +92,6 @@ def run_tp1_demo() -> None:
     except Exception as e:
         print(f"Erreur chargement: {e}")
     else:
-        # Affiche la bibliotheque rechargée
         ma_bibliotheque.afficher()
 
 if __name__ == "__main__":
