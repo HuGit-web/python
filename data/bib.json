@@ -22,5 +22,11 @@
     "titre": "Pokemon",
     "auteur": "Myamoto",
     "ISBN": "56454565874"
+  },
+  {
+    "type": "Livre",
+    "titre": "Le Petit Prince",
+    "auteur": "Antoine Saint-Exupéry",
+    "ISBN": "9783140464079"
   }
 ]
