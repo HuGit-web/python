@@ -1,31 +1,33 @@
 from pathlib import Path
 import sys
 try:
-    from .models import Livre, LivreNumerique, Bibliotheque
+    from .models import Livre, LivreNumerique
+    from .file_manager import BibliothequeAvecFichier
 except Exception:
     project_root = Path(__file__).resolve().parents[1]
     if str(project_root) not in sys.path:
         sys.path.insert(0, str(project_root))
-    from src.models import Livre, LivreNumerique, Bibliotheque
+    from src.models import Livre, LivreNumerique
+    from src.file_manager import BibliothequeAvecFichier
 from typing import Optional
 
-def create_demo_library() -> Bibliotheque:
-    b = Bibliotheque("Demo Bibliotheque")
+def create_demo_library() -> BibliothequeAvecFichier:
+    b = BibliothequeAvecFichier("Demo Bibliotheque")
     b.ajouter_livre(Livre("Seigneur des anneux", "John Tolkien", "9788845292613"))
     b.ajouter_livre(Livre("Harry Potter", "J.K. Rowling", "9780747532743"))
     b.ajouter_livre(Livre("Les Rois maudits", "Maurice Druon", "9782253005553"))
-    b.ajouter_livre(Livre("King in yellow", "Stephen King", "9781501142970"))
+    b.ajouter_livre(LivreNumerique("King in yellow", "Stephen King", "9781501142970", "2MB"))
     return b
 
-def save_library(bibliotheque: Bibliotheque, path: str) -> None:
+def save_library(bibliotheque: BibliothequeAvecFichier, path: str) -> None:
     bibliotheque.sauvegarder(path)
 
-def load_library(path: str) -> Bibliotheque:
-    b = Bibliotheque(Path(path).stem)
+def load_library(path: str) -> BibliothequeAvecFichier:
+    b = BibliothequeAvecFichier(Path(path).stem)
     b.charger(path)
     return b
 
-def export_library_csv(bibliotheque: Bibliotheque, path: str) -> None:
+def export_library_csv(bibliotheque: BibliothequeAvecFichier, path: str) -> None:
     bibliotheque.export_csv(path)
 
 def main_demo() -> None:
@@ -44,7 +46,7 @@ def run_tp1_demo() -> None:
     data_dir = project_root / "data"
     data_dir.mkdir(parents=True, exist_ok=True)
 
-    ma_bibliotheque = Bibliotheque("Le tiroire")
+    ma_bibliotheque = BibliothequeAvecFichier("Le tiroire")
 
     livre1 = Livre("Seigneur des anneux", "John Tolkien", "9788845292613")
     livre2 = Livre("Harry Potter ", "J.K. Rowling ", "9780747532743 ")

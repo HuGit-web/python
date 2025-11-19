@@ -74,61 +74,25 @@ class Bibliotheque:
 
     def recherche_par_auteur(self, auteur: str):
         return [livre for livre in self.livres if livre.auteur == auteur]
+    # File IO responsibilities have been moved to `src.file_manager.BibliothequeAvecFichier`.
+    # This keeps the domain model (Livre / Bibliotheque) focused on business logic.
 
+    # Backwards-compatible wrappers that delegate to BibliothequeAvecFichier
     def sauvegarder(self, filepath: str) -> None:
-        p = Path(filepath)
-        p.parent.mkdir(parents=True, exist_ok=True)
-        data = [livre.to_dict() for livre in self.livres]
-        try:
-            with p.open("w", encoding="utf-8") as f:
-                json.dump(data, f, ensure_ascii=False, indent=2)
-        except OSError as e:
-            raise OSError(f"Erreur ecriture fichier: {e}")
+        from .file_manager import BibliothequeAvecFichier
+        b = BibliothequeAvecFichier(self.nom)
+        b.livres = list(self.livres)
+        return b.sauvegarder(filepath)
 
     def charger(self, filepath: str) -> None:
-        p = Path(filepath)
-        if not p.exists():
-            raise FileNotFoundError(f"Fichier '{filepath}' inexistant")
-        try:
-            with p.open("r", encoding="utf-8") as f:
-                data = json.load(f)
-        except json.JSONDecodeError as e:
-            raise ValueError(f"Format JSON invalide: {e}")
-        except OSError as e:
-            raise OSError(f"Erreur lecture fichier: {e}")
-
-        self.livres.clear()
-        for livre_dic in data:
-            if livre_dic.get("type") == "Livre Numerique":
-                livre = LivreNumerique(
-                    livre_dic.get("titre", ""),
-                    livre_dic.get("auteur", ""),
-                    livre_dic.get("ISBN", ""),
-                    livre_dic.get("taille_fichier", ""),
-                )
-            else:
-                livre = Livre(
-                    livre_dic.get("titre", ""),
-                    livre_dic.get("auteur", ""),
-                    livre_dic.get("ISBN", ""),
-                )
-            self.livres.append(livre)
+        from .file_manager import BibliothequeAvecFichier
+        b = BibliothequeAvecFichier(self.nom)
+        b.charger(filepath)
+        self.livres = b.livres
 
     def export_csv(self, filepath: str) -> None:
-        p = Path(filepath)
-        p.parent.mkdir(parents=True, exist_ok=True)
-        try:
-            with p.open("w", encoding="utf-8", newline="") as f:
-                writer = csv.writer(f)
-                writer.writerow(["type", "titre", "auteur", "ISBN", "taille_fichier"])
-                for livre in self.livres:
-                    d = livre.to_dict()
-                    writer.writerow([
-                        d.get("type", ""),
-                        d.get("titre", ""),
-                        d.get("auteur", ""),
-                        d.get("ISBN", ""),
-                        d.get("taille_fichier", ""),
-                    ])
-        except OSError as e:
-            raise OSError(f"Erreur export CSV: {e}")
+        from .file_manager import BibliothequeAvecFichier
+        b = BibliothequeAvecFichier(self.nom)
+        b.livres = list(self.livres)
+        return b.export_csv(filepath)
+
