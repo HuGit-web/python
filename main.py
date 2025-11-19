@@ -15,7 +15,7 @@ def main() -> None:
     bib_csv = data_dir / "bibliotheque.csv"
 
     bibliotheque = create_demo_library()
-    print("Bibliothèque de démonstration créée :")
+    print("Bibliotheque de demonstration creee :")
     bibliotheque.afficher()
 
     try:
@@ -32,7 +32,7 @@ def main() -> None:
 
     try:
         bibliotheque_rechargee = load_library(str(bib_json))
-        print("\nBibliothèque rechargée depuis JSON :")
+        print("\nBibliotheque rechargee depuis JSON :")
         bibliotheque_rechargee.afficher()
     except Exception as e:
         print(f"Erreur lors du chargement : {e}")
