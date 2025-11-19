@@ -6,6 +6,20 @@ from src.interface import (
     export_library_csv
 )
 
+from src.interface import (
+    create_demo_library,
+    save_library,
+    load_library,
+    export_library_csv
+)
+
+from src.gui import run_gui
+
+def _choose_mode():
+    print("Choose mode:\n1) Demo CLI\n2) GUI")
+    choice = input("Mode (1 or 2): ").strip()
+    return choice
+
 def main() -> None:
     project_root = Path(__file__).resolve().parent
     data_dir = project_root / "data"
@@ -38,4 +52,8 @@ def main() -> None:
         print(f"Erreur lors du chargement : {e}")
 
 if __name__ == "__main__":
-    main()
+    choice = _choose_mode()
+    if choice == "2":
+        run_gui()
+    else:
+        main()

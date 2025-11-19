@@ -16,5 +16,11 @@
     "titre": "King in yellow ",
     "auteur": "Stephen King ",
     "ISBN": "9781501142970 "
+  },
+  {
+    "type": "Livre",
+    "titre": "Pokemon",
+    "auteur": "Myamoto",
+    "ISBN": "56454565874"
   }
 ]

@@ -73,7 +73,7 @@ class Bibliotheque:
         return [livre for livre in self.livres if livre.titre == titre]
 
     def recherche_par_auteur(self, auteur: str):
-        return [livre for livre in self.livres if livre.auteur == auteur]
+        return [livre for livre in self.livres if livre.auteur.lower() == auteur.lower()]
     # File IO responsibilities have been moved to `src.file_manager.BibliothequeAvecFichier`.
     # This keeps the domain model (Livre / Bibliotheque) focused on business logic.
 
