@@ -1,11 +1,8 @@
-from pathlib import Path
-from src.interface import (
-    create_demo_library,
-    save_library,
-    load_library,
-    export_library_csv
-)
+# main.py
 
+from pathlib import Path
+
+# Bibliothèque (déjà existant)
 from src.interface import (
     create_demo_library,
     save_library,
@@ -15,12 +12,26 @@ from src.interface import (
 
 from src.gui import run_gui
 
-def _choose_mode():
-    print("Choose mode:\n1) Demo CLI\n2) GUI")
-    choice = input("Mode (1 or 2): ").strip()
-    return choice
+# Chat application
+from chat.server import start_server
+from chat.client import start_client
 
-def main() -> None:
+
+def _choose_mode():
+    print("\n====================================")
+    print("       CHOISISSEZ LE MODE")
+    print("====================================")
+    print("1) Mode Démo (CLI)")
+    print("2) Interface Graphique (Bibliothèque)")
+    print("3) Démarrer le serveur de chat")
+    print("4) Démarrer un client de chat")
+    print("5) Quitter")
+    print("====================================")
+    return input("Votre choix : ").strip()
+
+
+def main_cli():
+    """Ton ancien main renommé proprement."""
     project_root = Path(__file__).resolve().parent
     data_dir = project_root / "data"
     data_dir.mkdir(parents=True, exist_ok=True)
@@ -51,9 +62,28 @@ def main() -> None:
     except Exception as e:
         print(f"Erreur lors du chargement : {e}")
 
+
 if __name__ == "__main__":
-    choice = _choose_mode()
-    if choice == "2":
-        run_gui()
-    else:
-        main()
+    while True:
+        choice = _choose_mode()
+
+        if choice == "1":
+            main_cli()
+
+        elif choice == "2":
+            run_gui()
+
+        elif choice == "3":
+            print("\n[Démarrage du serveur de chat...]")
+            start_server()   # boucle infinie → CTRL+C pour arrêter
+
+        elif choice == "4":
+            print("\n[Démarrage du client de chat...]")
+            start_client()
+
+        elif choice == "5":
+            print("\nFermeture du programme.")
+            break
+
+        else:
+            print("Choix invalide, réessayez.")
