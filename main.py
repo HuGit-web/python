@@ -1,8 +1,5 @@
-# main.py
-
 from pathlib import Path
 
-# Bibliothèque (déjà existant)
 from src.interface import (
     create_demo_library,
     save_library,
@@ -12,7 +9,6 @@ from src.interface import (
 
 from src.gui import run_gui
 
-# Chat application
 from chat.server import start_server
 from chat.client import start_client
 
