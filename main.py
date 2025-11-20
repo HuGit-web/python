@@ -31,7 +31,6 @@ def _choose_mode():
 
 
 def main_cli():
-    """Ton ancien main renommé proprement."""
     project_root = Path(__file__).resolve().parent
     data_dir = project_root / "data"
     data_dir.mkdir(parents=True, exist_ok=True)
