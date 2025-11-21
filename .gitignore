@@ -1,17 +1,9 @@
 
 .venv/
-venv/
-env/
 
 __pycache__/
-*.py[cod]
-*$py.class
 
 .pytest_cache/
-.coverage
-coverage.xml
-htmlcov/
-
 
 .mypy_cache/
 
@@ -23,13 +15,6 @@ pip-wheel-metadata/
 
 
 .vscode/
-.idea/
-*.sublime-project
-*.sublime-workspace
-.DS_Store
-Thumbs.db
-desktop.ini
-
 
 .env
 .env.*
