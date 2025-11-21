@@ -2,30 +2,114 @@
   "livres": [
     {
       "type": "Livre",
-      "titre": "Harry Potter ",
-      "auteur": "J.K. Rowling ",
-      "ISBN": "9780747532743 ",
+      "titre": "Harry Potter",
+      "auteur": "J.K. Rowling",
+      "ISBN": "9780747532743",
       "exemplaire_id": null,
       "etat": "disponible",
-      "history": []
+      "genre": null,
+      "reviews": [],
+      "history": [],
+      "exemplaires": {
+        "total": 5,
+        "disponibles": 5
+      },
+      "exemplaires_details": [
+        {
+          "exemplaire_id": "9780747532743-exa2bc9665",
+          "etat": "disponible"
+        },
+        {
+          "exemplaire_id": "9780747532743-ex8795cec7",
+          "etat": "disponible"
+        },
+        {
+          "exemplaire_id": "9780747532743-ex57cb8be5",
+          "etat": "disponible"
+        },
+        {
+          "exemplaire_id": "9780747532743-ex572249c1",
+          "etat": "disponible"
+        },
+        {
+          "exemplaire_id": "9780747532743-ex70d7bb2a",
+          "etat": "disponible"
+        }
+      ]
     },
     {
       "type": "Livre",
-      "titre": "Les Rois maudits ",
-      "auteur": "Maurice Druon ",
-      "ISBN": "9782253005553 ",
+      "titre": "Les Rois maudits",
+      "auteur": "Maurice Druon",
+      "ISBN": "9782253005553",
       "exemplaire_id": null,
       "etat": "disponible",
-      "history": []
+      "genre": null,
+      "reviews": [],
+      "history": [],
+      "exemplaires": {
+        "total": 5,
+        "disponibles": 5
+      },
+      "exemplaires_details": [
+        {
+          "exemplaire_id": "9782253005553-ex1d2e58fb",
+          "etat": "disponible"
+        },
+        {
+          "exemplaire_id": "9782253005553-ex1873fb05",
+          "etat": "disponible"
+        },
+        {
+          "exemplaire_id": "9782253005553-exfa1db166",
+          "etat": "disponible"
+        },
+        {
+          "exemplaire_id": "9782253005553-exa691b715",
+          "etat": "disponible"
+        },
+        {
+          "exemplaire_id": "9782253005553-ex4c73ea76",
+          "etat": "disponible"
+        }
+      ]
     },
     {
       "type": "Livre",
-      "titre": "King in yellow ",
-      "auteur": "Stephen King ",
-      "ISBN": "9781501142970 ",
+      "titre": "King in yellow",
+      "auteur": "Stephen King",
+      "ISBN": "9781501142970",
       "exemplaire_id": null,
       "etat": "disponible",
-      "history": []
+      "genre": null,
+      "reviews": [],
+      "history": [],
+      "exemplaires": {
+        "total": 5,
+        "disponibles": 5
+      },
+      "exemplaires_details": [
+        {
+          "exemplaire_id": "9781501142970-exc5e46a81",
+          "etat": "disponible"
+        },
+        {
+          "exemplaire_id": "9781501142970-ex31df9bac",
+          "etat": "disponible"
+        },
+        {
+          "exemplaire_id": "9781501142970-ex56c65c80",
+          "etat": "disponible"
+        },
+        {
+          "exemplaire_id": "9781501142970-exc7bb9577",
+          "etat": "disponible"
+        },
+        {
+          "exemplaire_id": "9781501142970-ex1e05419b",
+          "etat": "disponible"
+        }
+      ]
     },
     {
       "type": "Livre",
@@ -34,7 +118,63 @@
       "ISBN": "56454565874",
       "exemplaire_id": null,
       "etat": "disponible",
-      "history": []
+      "genre": null,
+      "reviews": [],
+      "history": [
+        {
+          "isbn": "56454565874",
+          "exemplaire_id": null,
+          "date_emprunt": "2025-11-21",
+          "date_retour_prevue": "2025-12-12",
+          "date_retour_effective": null,
+          "penalite_acquise": 0.0,
+          "username": "bob"
+        },
+        {
+          "isbn": "56454565874",
+          "exemplaire_id": null,
+          "date_emprunt": "2025-11-21",
+          "date_retour_prevue": "2025-12-12",
+          "date_retour_effective": null,
+          "penalite_acquise": 0.0,
+          "username": "bob"
+        },
+        {
+          "isbn": "56454565874",
+          "exemplaire_id": null,
+          "date_emprunt": "2025-11-21",
+          "date_retour_prevue": "2025-12-12",
+          "date_retour_effective": null,
+          "penalite_acquise": 0.0,
+          "username": "bob"
+        }
+      ],
+      "exemplaires": {
+        "total": 5,
+        "disponibles": 2
+      },
+      "exemplaires_details": [
+        {
+          "exemplaire_id": "56454565874-excc108a45",
+          "etat": "disponible"
+        },
+        {
+          "exemplaire_id": "56454565874-ex1e1e8495",
+          "etat": "disponible"
+        },
+        {
+          "exemplaire_id": "56454565874-exf190a72b",
+          "etat": "disponible"
+        },
+        {
+          "exemplaire_id": "56454565874-ex4b9f159e",
+          "etat": "disponible"
+        },
+        {
+          "exemplaire_id": "56454565874-exfbed47aa",
+          "etat": "disponible"
+        }
+      ]
     },
     {
       "type": "Livre",
@@ -43,13 +183,65 @@
       "ISBN": "9783140464079",
       "exemplaire_id": null,
       "etat": "disponible",
-      "history": []
+      "genre": null,
+      "reviews": [],
+      "history": [],
+      "exemplaires": {
+        "total": 5,
+        "disponibles": 5
+      },
+      "exemplaires_details": [
+        {
+          "exemplaire_id": "9783140464079-ex954f5bef",
+          "etat": "disponible"
+        },
+        {
+          "exemplaire_id": "9783140464079-ex81fd419f",
+          "etat": "disponible"
+        },
+        {
+          "exemplaire_id": "9783140464079-ex143895ee",
+          "etat": "disponible"
+        },
+        {
+          "exemplaire_id": "9783140464079-exd18bcd50",
+          "etat": "disponible"
+        },
+        {
+          "exemplaire_id": "9783140464079-ex122d522e",
+          "etat": "disponible"
+        }
+      ]
     }
   ],
   "reservations": {
-    "9780747532743": [],
+    "9780747532743": [
+      "hugo"
+    ],
     "9783140464079": [
       "alice"
     ]
+  },
+  "exemplaires": {
+    "9780747532743": {
+      "total": 5,
+      "disponibles": 5
+    },
+    "9782253005553": {
+      "total": 5,
+      "disponibles": 5
+    },
+    "9781501142970": {
+      "total": 5,
+      "disponibles": 5
+    },
+    "56454565874": {
+      "total": 5,
+      "disponibles": 2
+    },
+    "9783140464079": {
+      "total": 5,
+      "disponibles": 5
+    }
   }
 }

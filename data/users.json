@@ -11,7 +11,7 @@
     "loans": [],
     "reservations": [
       {
-        "isbn": 9783140464079,
+        "isbn": "9783140464079",
         "exemplaire_id": null,
         "date_reservation": "2025-11-21"
       }
@@ -25,6 +25,22 @@
     "username": "bob",
     "_pwd_hash": "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4",
     "is_admin": true,
+    "subscription": {
+      "type": "premium",
+      "date_debut": "2025-11-21",
+      "date_expiration": "2026-07-31"
+    },
+    "loans": [],
+    "reservations": [],
+    "penalites": 0.0,
+    "notifications": [],
+    "monthly_emprunts": 0,
+    "last_reset": null
+  },
+  {
+    "username": "hugo",
+    "_pwd_hash": "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4",
+    "is_admin": false,
     "subscription": {
       "type": "premium",
       "date_debut": "2025-11-21",

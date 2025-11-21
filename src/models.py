@@ -1,60 +1,82 @@
 import json
 import csv
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
-class Livre:
-    def __init__(self, titre: str, auteur: str, ISBN: str, exemplaire_id: str | None = None, etat: str = "disponible"):
+
+class AggregatedLivre:
+    """Represents a book aggregated by ISBN with counts instead of one object per exemplar."""
+    def __init__(self, titre: str, auteur: str, ISBN: str, total: int = 0, disponibles: int = 0, genre: str | None = None):
+        self.type = "Livre"
         self.titre = titre
         self.auteur = auteur
         self.ISBN = ISBN
-        self.exemplaire_id = exemplaire_id
-        self.etat = etat
+        self.nb_exemplaire = int(total)
+        self.disponibles = int(disponibles)
+        self.genre = genre
+        self.reviews: list[dict] = []
+        self.history: list[dict] = []
+        self.exemplaires_details: list[dict] = []
 
     def to_dict(self) -> dict:
         return {
-            "type": "Livre",
+            "type": self.type,
             "titre": self.titre,
             "auteur": self.auteur,
             "ISBN": self.ISBN,
-            "exemplaire_id": self.exemplaire_id,
-            "etat": self.etat,
-            "history": getattr(self, "history", []),
+            "exemplaire_id": None,
+            "etat": "disponible" if self.disponibles > 0 else "indisponible",
+            "genre": self.genre,
+            "reviews": list(self.reviews),
+            "history": list(self.history),
+            "exemplaires": {"total": int(self.nb_exemplaire), "disponibles": int(self.disponibles)},
+            "exemplaires_details": list(self.exemplaires_details),
         }
 
-    def __str__(self) -> str:
-        extra = f", id:{self.exemplaire_id}" if self.exemplaire_id else ""
-        return f"{self.titre} — {self.auteur} (ISBN: {self.ISBN}{extra})"
-
     def __repr__(self) -> str:
-        return f"Livre(titre={self.titre!r}, auteur={self.auteur!r}, ISBN={self.ISBN!r})"
+        return f"AggregatedLivre(ISBN={self.ISBN!r}, total={self.nb_exemplaire}, disponibles={self.disponibles})"
 
-class LivreNumerique(Livre):
+
+class LivreNumerique(AggregatedLivre):
     def __init__(self, titre: str, auteur: str, ISBN: str, taille_fichier: str):
         super().__init__(titre, auteur, ISBN)
+        self.type = "Livre Numerique"
         self.taille_fichier = taille_fichier
 
     def to_dict(self) -> dict:
-        base = super().to_dict()
-        base["type"] = "Livre Numerique"
-        base["taille_fichier"] = self.taille_fichier
-        return base
+        d = super().to_dict()
+        d['taille_fichier'] = getattr(self, 'taille_fichier', None)
+        return d
 
-    def __str__(self) -> str:
-        return f"{self.titre} — {self.auteur} (ISBN: {self.ISBN}, {self.taille_fichier})"
 
-    def __repr__(self) -> str:
-        return (f"LivreNumerique(titre={self.titre!r}, auteur={self.auteur!r}, "
-                f"ISBN={self.ISBN!r}, taille_fichier={self.taille_fichier!r})")
+Livre = AggregatedLivre
+
 
 class Bibliotheque:
     def __init__(self, nom: str):
         self.nom = nom
-        self.livres: List[Livre] = []
+        self.livres: List[AggregatedLivre] = []
         self.reservations: dict[str, list[str]] = {}
 
     def ajouter_livre(self, livre: Livre) -> None:
-        self.livres.append(livre)
+        
+        if isinstance(livre, AggregatedLivre):
+            self.livres.append(livre)
+            return
+        
+        try:
+            titre = livre.get('titre')
+            auteur = livre.get('auteur')
+            isbn = livre.get('ISBN')
+            exemplaires = livre.get('exemplaires', {})
+            total = exemplaires.get('total', 1)
+            dispon = exemplaires.get('disponibles', total)
+        except Exception:
+            return
+        ag = AggregatedLivre(titre, auteur, isbn, total=int(total), disponibles=int(dispon))
+        if 'exemplaires_details' in livre:
+            ag.exemplaires_details = list(livre.get('exemplaires_details', []))
+        self.livres.append(ag)
 
     def afficher(self) -> None:
         """Affiche la liste des livres présents dans la bibliothèque."""
@@ -77,46 +99,91 @@ class Bibliotheque:
         return False
 
     def ajouter_exemplaire(self, titre: str, auteur: str, ISBN: str, exemplaire_id: str) -> None:
-        l = Livre(titre, auteur, ISBN, exemplaire_id=exemplaire_id)
-        self.livres.append(l)
+        if not ISBN:
+            return
+        ag = None
+        for livre in self.livres:
+            if getattr(livre, 'ISBN', None) == ISBN:
+                ag = livre
+                break
+        if ag is None:
+            
+            ag = AggregatedLivre(titre, auteur, ISBN, total=1, disponibles=1)
+            if exemplaire_id:
+                ag.exemplaires_details.append({'exemplaire_id': exemplaire_id, 'etat': 'disponible'})
+            else:
+                
+                from uuid import uuid4
+                ag.exemplaires_details.append({'exemplaire_id': f"{ISBN}-ex{uuid4().hex[:8]}", 'etat': 'disponible'})
+            self.livres.append(ag)
+            return
+
+        
+        ag.nb_exemplaire = int(getattr(ag, 'nb_exemplaire', 0)) + 1
+        ag.disponibles = int(getattr(ag, 'disponibles', 0)) + 1
+        if exemplaire_id:
+            ag.exemplaires_details.append({'exemplaire_id': exemplaire_id, 'etat': 'disponible'})
+        else:
+            from uuid import uuid4
+            ag.exemplaires_details.append({'exemplaire_id': f"{ISBN}-ex{uuid4().hex[:8]}", 'etat': 'disponible'})
+        ag.disponibles = min(ag.disponibles, ag.nb_exemplaire)
 
     def trouver_exemplaires(self, ISBN: str) -> list:
-        return [livre for livre in self.livres if livre.ISBN == ISBN]
+        return [liv for liv in self.livres if getattr(liv, 'ISBN', None) == ISBN]
 
     def emprunter_exemplaire(self, ISBN: str, user) -> Optional[Livre]:
-        """Try to borrow an available exemplar for user. Returns the Livre borrowed or None."""
+        """Try to borrow an available exemplar for user.
+
+        Returns the Livre borrowed or raises ValueError with a human message when
+        the operation is not permitted or not possible.
+        """
         queue = self.reservations.get(ISBN, [])
-        if queue and queue[0] != getattr(user, 'username', None):
-            return None
+        username = getattr(user, 'username', None)
+        if queue and queue[0] != username:
+            raise ValueError("Une réservation existe et vous n'êtes pas en tête de file")
+
         for livre in self.livres:
-            if livre.ISBN == ISBN and livre.etat == "disponible":
-                livre.etat = "emprunte"
-                try:
-                    loan = user.borrow(ISBN, exemplaire_id=livre.exemplaire_id)
-                except Exception:
-                    livre.etat = "disponible"
-                    return None
-                if not hasattr(livre, 'history'):
-                    livre.history = []
-                livre.history.append(loan.to_dict())
-                if queue and queue[0] == user.username:
-                    queue.pop(0)
-                return livre
-        return None
+            if getattr(livre, 'ISBN', None) != ISBN:
+                continue
+            if livre.disponibles <= 0:
+                break
+            livre.disponibles -= 1
+            try:
+                loan = user.borrow(ISBN)
+            except Exception:
+                livre.disponibles += 1
+                raise
+
+            entry = {}
+            try:
+                entry = loan.to_dict()
+                entry['username'] = username
+            except Exception:
+                entry = {'username': username}
+            livre.history.append(entry)
+            if queue and queue[0] == username:
+                queue.pop(0)
+            return livre
+
+        raise ValueError("Aucun exemplaire disponible pour cet ISBN")
 
     def retourner_exemplaire(self, exemplaire_id: str, user, users_file: str | None = None) -> Optional[float]:
         """Return an exemplar by id for the given user. Returns penalty amount if any."""
         loan = None
-        for l in user.loans:
-            if l.exemplaire_id == exemplaire_id and l.date_retour_effective is None:
+        for l in getattr(user, 'loans', []):
+            if getattr(l, 'exemplaire_id', None) == exemplaire_id and getattr(l, 'date_retour_effective', None) is None:
                 loan = l
                 break
         if loan is None:
             return None
         montant = user.return_loan(loan)
+
+        isbn = getattr(loan, 'isbn', None) or getattr(loan, 'ISBN', None)
+        if isbn is None:
+            return montant
         for livre in self.livres:
-            if livre.exemplaire_id == exemplaire_id:
-                livre.etat = "disponible"
+            if getattr(livre, 'ISBN', None) == isbn:
+                livre.disponibles = min(livre.nb_exemplaire, livre.disponibles + 1)
                 queue = self.reservations.get(livre.ISBN, [])
                 if queue and users_file:
                     next_username = queue[0]
@@ -137,6 +204,10 @@ class Bibliotheque:
         q = self.reservations.setdefault(ISBN, [])
         if username in q:
             return False
+        
+        for livre in self.livres:
+            if getattr(livre, 'ISBN', None) == ISBN and getattr(livre, 'disponibles', 0) > 0:
+                return False
         q.append(username)
         if user_obj is not None:
             try:
@@ -152,6 +223,75 @@ class Bibliotheque:
                 except Exception:
                     pass
         return True
+
+    def add_review(self, ISBN: str, username: str, rating: int, comment: str | None = None) -> bool:
+        """Add a review for the first matching book with ISBN. Returns True if added."""
+        for livre in self.livres:
+            if livre.ISBN == ISBN:
+                if not hasattr(livre, 'reviews'):
+                    livre.reviews = []
+                livre.reviews.append({
+                    "username": username,
+                    "rating": int(rating),
+                    "comment": comment,
+                })
+                return True
+        return False
+
+    def recommend_for_user(self, user, limit: int = 6) -> list:
+        """Simple recommendations: use genres from user's past loans and recommend other books in same genres.
+
+        Return at most `limit` distinct books (one per ISBN). Avoid recommending books the user already has in loans.
+        """
+        genres = []
+
+        for l in getattr(user, 'loans', []):
+            for livre in self.livres:
+                if livre.ISBN == l.isbn and getattr(livre, 'genre', None):
+                    genres.append(livre.genre)
+
+        for livre in self.livres:
+            for h in getattr(livre, 'history', []):
+                if h.get('username') == getattr(user, 'username', None) and livre.genre:
+                    genres.append(livre.genre)
+
+        from collections import Counter
+        c = Counter(genres)
+        fav_genres = [g for g, _ in c.most_common()]
+
+        recs = []
+        added_isbns = set()
+        seen_isbns = {l.isbn for l in getattr(user, 'loans', [])}
+
+        if not fav_genres:
+            for lv in self.livres:
+                isbn = getattr(lv, 'ISBN', None)
+                if not isbn:
+                    continue
+                if isbn in seen_isbns or isbn in added_isbns:
+                    continue
+                if getattr(lv, 'disponibles', 0) <= 0:
+                    continue
+                recs.append(lv)
+                added_isbns.add(isbn)
+                if len(recs) >= limit:
+                    break
+            return recs
+
+        for g in fav_genres:
+            for livre in self.livres:
+                isbn = getattr(livre, 'ISBN', None)
+                if not isbn:
+                    continue
+                if getattr(livre, 'genre', None) != g:
+                    continue
+                if isbn in seen_isbns or isbn in added_isbns:
+                    continue
+                recs.append(livre)
+                added_isbns.add(isbn)
+                if len(recs) >= limit:
+                    return recs
+        return recs
 
     def annuler_reservation(self, ISBN: str, username: str = None, user_obj=None, users_file: str | None = None) -> bool:
         if username is None and user_obj is not None:
@@ -187,6 +327,163 @@ class Bibliotheque:
 
     def recherche_par_auteur(self, auteur: str):
         return [livre for livre in self.livres if livre.auteur.lower() == auteur.lower()]
+
+    def stats(self, users: list | None = None) -> dict:
+        """Return statistics useful for admin dashboards.
+
+        - popular_books: list of (ISBN, titre, count_history)
+        - multi_exemplaires: dict ISBN -> count
+        - exemplar_status_counts: dict status -> count
+        - active_users: number of users with active loans (if users provided)
+        - overdue_loans: total number of overdue loans (if users provided)
+        """
+        from collections import Counter, defaultdict
+        res: dict = {}
+        
+        hist_counts = Counter()
+        title_map = {}
+        for livre in self.livres:
+            title_map[livre.ISBN] = getattr(livre, 'titre', None)
+            hist_counts[livre.ISBN] += len(getattr(livre, 'history', []))
+        popular = [(isbn, title_map.get(isbn), cnt) for isbn, cnt in hist_counts.most_common()]
+        res['popular_books'] = popular
+
+        
+        
+        isbn_counts = Counter()
+        status_counts = Counter()
+        for livre in self.livres:
+            isbn_counts[livre.ISBN] += int(getattr(livre, 'nb_exemplaire', 0))
+            dispo = int(getattr(livre, 'disponibles', 0))
+            emprunte = max(0, int(getattr(livre, 'nb_exemplaire', 0)) - dispo)
+            status_counts['disponible'] += dispo
+            status_counts['emprunte'] += emprunte
+        res['multi_exemplaires'] = dict(isbn_counts)
+        res['exemplar_status_counts'] = dict(status_counts)
+
+        
+        active_users = 0
+        overdue = 0
+        if users:
+            for u in users:
+                active = any(l.date_retour_effective is None for l in getattr(u, 'loans', []))
+                if active:
+                    active_users += 1
+                for l in getattr(u, 'loans', []):
+                    if l.date_retour_effective is None and getattr(l, 'date_retour_prevue', None) and l.date_retour_prevue < __import__('datetime').date.today():
+                        overdue += 1
+        res['active_users'] = active_users
+        res['overdue_loans'] = overdue
+        return res
+
+    def set_exemplaire_status(self, exemplaire_id: str, status: str) -> bool:
+        """Set the status of an exemplar by id. Returns True if changed."""
+        for livre in self.livres:
+            
+            for d in getattr(livre, 'exemplaires_details', []):
+                if d.get('exemplaire_id') == exemplaire_id:
+                    old = d.get('etat', 'disponible')
+                    new = status
+                    d['etat'] = new
+                    
+                    if old == 'disponible' and new != 'disponible':
+                        livre.disponibles = max(0, livre.disponibles - 1)
+                    elif old != 'disponible' and new == 'disponible':
+                        livre.disponibles = min(livre.nb_exemplaire, livre.disponibles + 1)
+                    return True
+        return False
+
+    def get_exemplar_statuses(self, ISBN: str) -> dict:
+        """Return counts summary for aggregated book matching ISBN.
+
+        If per-exemplaire details are present, count those states individually.
+        Otherwise return aggregated disponible/emprunte/total counts.
+        """
+        from collections import Counter
+        for livre in self.livres:
+            if getattr(livre, 'ISBN', None) == ISBN:
+                details = getattr(livre, 'exemplaires_details', None)
+                if details:
+                    c = Counter()
+                    for d in details:
+                        st = d.get('etat', 'disponible')
+                        c[st] += 1
+                    c['total'] = sum(c.values())
+                    return dict(c)
+                empruntes = max(0, int(livre.nb_exemplaire) - int(livre.disponibles))
+                return {'disponible': int(livre.disponibles), 'emprunte': int(empruntes), 'total': int(livre.nb_exemplaire)}
+        return {'disponible': 0, 'emprunte': 0, 'total': 0}
+
+    def find_exemplar_by_id(self, exemplaire_id: str):
+        
+        for livre in self.livres:
+            for d in getattr(livre, 'exemplaires_details', []):
+                if d.get('exemplaire_id') == exemplaire_id:
+                    
+                    from types import SimpleNamespace
+                    obj = SimpleNamespace(**d)
+                    
+                    obj.ISBN = getattr(livre, 'ISBN', None)
+                    obj.titre = getattr(livre, 'titre', None)
+                    return obj
+        return None
+
+    def ajouter_exemplaires_bulk(self, titre: str, auteur: str, ISBN: str, count: int) -> int:
+        """Add `count` exemplars for the given book metadata. Returns number added."""
+        
+        added = int(count)
+        ag = None
+        for livre in self.livres:
+            if getattr(livre, 'ISBN', None) == ISBN:
+                ag = livre
+                break
+        if ag is None:
+            ag = AggregatedLivre(titre, auteur, ISBN, total=added, disponibles=added)
+            
+            from uuid import uuid4
+            for _ in range(added):
+                ag.exemplaires_details.append({'exemplaire_id': f"{ISBN}-ex{uuid4().hex[:8]}", 'etat': 'disponible'})
+            self.livres.append(ag)
+            return added
+        
+        from uuid import uuid4
+        for _ in range(added):
+            ag.nb_exemplaire += 1
+            ag.disponibles += 1
+            ag.exemplaires_details.append({'exemplaire_id': f"{ISBN}-ex{uuid4().hex[:8]}", 'etat': 'disponible'})
+        
+        ag.disponibles = min(ag.disponibles, ag.nb_exemplaire)
+        return added
+
+    def ensure_min_exemplaires_for_all(self, min_count: int = 5) -> int:
+        """Ensure each ISBN present in the library has at least `min_count` exemplaires.
+
+        Returns the total number of exemplaires added.
+        """
+        total_added = 0
+        for livre in self.livres:
+            if getattr(livre, 'nb_exemplaire', 0) < min_count:
+                need = int(min_count - livre.nb_exemplaire)
+                if need > 0:
+                    total_added += self.ajouter_exemplaires_bulk(livre.titre, livre.auteur, livre.ISBN, need)
+        return total_added
+
+    def trim_exemplaires(self, max_per_isbn: int = 5) -> int:
+        """Trim exemplars so that each ISBN has at most `max_per_isbn` entries.
+
+        Removes extra Livre objects from self.livres and returns the number removed.
+        """
+        
+        removed = 0
+        for livre in self.livres:
+            if livre.nb_exemplaire > max_per_isbn:
+                to_remove = int(livre.nb_exemplaire - max_per_isbn)
+                
+                livre.exemplaires_details = livre.exemplaires_details[:-to_remove] if len(livre.exemplaires_details) >= to_remove else []
+                livre.nb_exemplaire = max_per_isbn
+                livre.disponibles = min(livre.disponibles, livre.nb_exemplaire)
+                removed += to_remove
+        return removed
 
     def sauvegarder(self, filepath: str) -> None:
         from .file_manager import BibliothequeAvecFichier

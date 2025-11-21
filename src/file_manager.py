@@ -5,7 +5,7 @@ from typing import Optional
 import tempfile
 import os
 
-from .models import Livre, LivreNumerique, Bibliotheque
+from .models import AggregatedLivre, LivreNumerique, Bibliotheque
 from .exceptions import ErreurFichier
 from .users import User
 
@@ -20,9 +20,23 @@ class BibliothequeAvecFichier(Bibliotheque):
         p = Path(filepath)
         try:
             p.parent.mkdir(parents=True, exist_ok=True)
+            
+            from collections import defaultdict
+            counts = defaultdict(int)
+            avail = defaultdict(int)
+            for livre in self.livres:
+                isbn = str(getattr(livre, 'ISBN', '') or '')
+                total = int(getattr(livre, 'nb_exemplaire', 1))
+                disp = int(getattr(livre, 'disponibles', total))
+                counts[isbn] += total
+                avail[isbn] += disp
+
+            exemplaires_map = {isbn: {"total": counts[isbn], "disponibles": avail[isbn]} for isbn in counts}
+
             data = {
                 "livres": [livre.to_dict() for livre in self.livres],
                 "reservations": getattr(self, "reservations", {}),
+                "exemplaires": exemplaires_map,
             }
             dirpath = str(p.parent)
             with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=dirpath, delete=False) as tf:
@@ -47,6 +61,8 @@ class BibliothequeAvecFichier(Bibliotheque):
         self.livres.clear()
         livres_data = data.get("livres") if isinstance(data, dict) else data
         for livre_dic in livres_data:
+            
+            exmap = livre_dic.get('exemplaires') or livre_dic.get('exemplaires_map')
             if livre_dic.get("type") == "Livre Numerique":
                 livre = LivreNumerique(
                     livre_dic.get("titre", ""),
@@ -54,19 +70,48 @@ class BibliothequeAvecFichier(Bibliotheque):
                     livre_dic.get("ISBN", ""),
                     livre_dic.get("taille_fichier", ""),
                 )
+                if livre_dic.get("genre"):
+                    livre.genre = livre_dic.get("genre")
+                try:
+                    livre.reviews = livre_dic.get("reviews", []) or []
+                except Exception:
+                    livre.reviews = []
+                
+                self.livres.append(livre)
+                continue
+
+            if isinstance(exmap, dict):
+                total = int(exmap.get('total', 1))
+                disponibles = int(exmap.get('disponibles', total))
             else:
-                livre = Livre(
-                    livre_dic.get("titre", ""),
-                    livre_dic.get("auteur", ""),
-                    livre_dic.get("ISBN", ""),
-                    exemplaire_id=livre_dic.get("exemplaire_id"),
-                    etat=livre_dic.get("etat", "disponible"),
-                )
+                
+                total = livre_dic.get('nb_exemplaire') or 1
+                disponibles = livre_dic.get('disponibles') if 'disponibles' in livre_dic else total
+
+            livre = AggregatedLivre(
+                livre_dic.get("titre", ""),
+                livre_dic.get("auteur", ""),
+                livre_dic.get("ISBN", ""),
+                total=int(total),
+                disponibles=int(disponibles),
+            )
+            if livre_dic.get("genre"):
+                livre.genre = livre_dic.get("genre")
+            try:
+                livre.reviews = livre_dic.get("reviews", []) or []
+            except Exception:
+                livre.reviews = []
             if livre_dic.get("history"):
                 try:
                     livre.history = livre_dic.get("history", [])
                 except Exception:
                     livre.history = []
+            
+            if livre_dic.get('exemplaires_details'):
+                try:
+                    livre.exemplaires_details = list(livre_dic.get('exemplaires_details', []))
+                except Exception:
+                    livre.exemplaires_details = []
             self.livres.append(livre)
 
         self.reservations = {}
@@ -75,6 +120,15 @@ class BibliothequeAvecFichier(Bibliotheque):
             if isinstance(res, dict):
                 for k, v in res.items():
                     self.reservations[k] = list(v)
+            
+            ex_map = data.get("exemplaires")
+            if isinstance(ex_map, dict):
+                
+                self.exemplaires = {str(k): v for k, v in ex_map.items()}
+            else:
+                self.exemplaires = {}
+        else:
+            self.exemplaires = {}
 
     def export_csv(self, filepath: str) -> None:
         p = Path(filepath)
@@ -156,9 +210,21 @@ class BibliothequeAvecFichier(Bibliotheque):
             bib_p.parent.mkdir(parents=True, exist_ok=True)
             users_p.parent.mkdir(parents=True, exist_ok=True)
 
+            from collections import defaultdict
+            counts = defaultdict(int)
+            avail = defaultdict(int)
+            for livre in self.livres:
+                isbn = str(getattr(livre, 'ISBN', '') or '')
+                total = int(getattr(livre, 'nb_exemplaire', 1))
+                disp = int(getattr(livre, 'disponibles', total))
+                counts[isbn] += total
+                avail[isbn] += disp
+            exemplaires_map = {isbn: {"total": counts[isbn], "disponibles": avail[isbn]} for isbn in counts}
+
             bib_data = {
                 "livres": [livre.to_dict() for livre in self.livres],
                 "reservations": getattr(self, "reservations", {}),
+                "exemplaires": exemplaires_map,
             }
             users_data = [u.to_dict() for u in users]
 

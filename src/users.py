@@ -56,6 +56,10 @@ class Subscription:
         d["date_debut"] = self.date_debut.isoformat()
         d["date_expiration"] = self.date_expiration.isoformat()
         return d
+    
+    def renew(self, extra_days: int):
+        """Extend the subscription by extra_days from current expiration."""
+        self.date_expiration = self.date_expiration + timedelta(days=extra_days)
 
 
 @dataclass
@@ -87,6 +91,10 @@ class User:
             return False
         if not self.subscription:
             return False
+        
+        today = date.today()
+        if self.subscription.date_expiration < today:
+            return False
         today = date.today()
         if self.last_reset is None or (self.last_reset.year, self.last_reset.month) != (today.year, today.month):
             self.monthly_emprunts = 0
@@ -95,7 +103,18 @@ class User:
         sub_info = SUBSCRIPTIONS.get(self.subscription.type, SUBSCRIPTIONS["basique"])
         max_emprunts = sub_info["max_emprunts"]
         active = sum(1 for l in self.loans if l.date_retour_effective is None)
-        return active < max_emprunts and self.monthly_emprunts < max_emprunts
+
+        if active >= max_emprunts:
+            return False
+
+        return self.monthly_emprunts < max_emprunts
+
+    def renew_subscription(self, extra_days: int) -> date | None:
+        """Renew the user's subscription by extra_days. Returns new expiration date or None if no subscription."""
+        if not self.subscription:
+            return None
+        self.subscription.renew(extra_days)
+        return self.subscription.date_expiration
 
     def borrow(self, isbn: str, exemplaire_id: Optional[str] = None) -> Loan:
         if not self.can_borrow():

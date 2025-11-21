@@ -1,13 +1,13 @@
 from pathlib import Path
 import sys
 try:
-    from .models import Livre, LivreNumerique
+    from .models import AggregatedLivre as Livre, LivreNumerique
     from .file_manager import BibliothequeAvecFichier
 except Exception:
     project_root = Path(__file__).resolve().parents[1]
     if str(project_root) not in sys.path:
         sys.path.insert(0, str(project_root))
-    from src.models import Livre, LivreNumerique
+    from src.models import AggregatedLivre as Livre, LivreNumerique
     from src.file_manager import BibliothequeAvecFichier
 from typing import Optional
 from .file_manager import BibliothequeAvecFichier
