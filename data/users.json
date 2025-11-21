@@ -1,1 +1,34 @@
-[]
+[
+  {
+    "username": "alice",
+    "_pwd_hash": "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",
+    "is_admin": false,
+    "subscription": {
+      "type": "basique",
+      "date_debut": "2025-11-21",
+      "date_expiration": "2026-05-08"
+    },
+    "loans": [],
+    "reservations": [],
+    "penalites": 0.0,
+    "notifications": [],
+    "monthly_emprunts": 0,
+    "last_reset": null
+  },
+  {
+    "username": "bob",
+    "_pwd_hash": "68256910bc07ec7457bcb7f4374e43ab5c98eda8d8eb8e1e53d6e33a47e8afe3",
+    "is_admin": true,
+    "subscription": {
+      "type": "premium",
+      "date_debut": "2025-11-21",
+      "date_expiration": "2026-07-31"
+    },
+    "loans": [],
+    "reservations": [],
+    "penalites": 0.0,
+    "notifications": [],
+    "monthly_emprunts": 0,
+    "last_reset": null
+  }
+]
