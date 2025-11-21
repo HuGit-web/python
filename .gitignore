@@ -1,29 +1,27 @@
-# Virtual environments
+
 .venv/
 venv/
 env/
 
-# Python bytecode
 __pycache__/
 *.py[cod]
 *$py.class
 
-# pytest / coverage
 .pytest_cache/
 .coverage
 coverage.xml
 htmlcov/
 
-# mypy
+
 .mypy_cache/
 
-# Distribution / build
+
 build/
 dist/
 *.egg-info/
 pip-wheel-metadata/
 
-# Editor / OS files
+
 .vscode/
 .idea/
 *.sublime-project
@@ -32,23 +30,23 @@ pip-wheel-metadata/
 Thumbs.db
 desktop.ini
 
-# Environment / secrets
+
 .env
 .env.*
 secrets.json
 
-# Logs
+
 *.log
 
-# Data files generated at runtime (adjust if you want to track fixtures)
+
 data/bib.json
 data/users.json
 data/catalogue.csv
 
-# SSH keys (safety)
+
 id_rsa
 id_rsa.pub
 id_ed25519
 id_ed25519.pub
 .ssh/## data/*.json
-## data/*.csv
+
