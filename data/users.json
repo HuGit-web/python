@@ -1,7 +1,7 @@
 [
   {
     "username": "alice",
-    "_pwd_hash": "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",
+    "_pwd_hash": "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4",
     "is_admin": false,
     "subscription": {
       "type": "basique",
@@ -9,7 +9,13 @@
       "date_expiration": "2026-05-08"
     },
     "loans": [],
-    "reservations": [],
+    "reservations": [
+      {
+        "isbn": 9783140464079,
+        "exemplaire_id": null,
+        "date_reservation": "2025-11-21"
+      }
+    ],
     "penalites": 0.0,
     "notifications": [],
     "monthly_emprunts": 0,
@@ -17,7 +23,7 @@
   },
   {
     "username": "bob",
-    "_pwd_hash": "68256910bc07ec7457bcb7f4374e43ab5c98eda8d8eb8e1e53d6e33a47e8afe3",
+    "_pwd_hash": "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4",
     "is_admin": true,
     "subscription": {
       "type": "premium",

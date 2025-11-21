@@ -95,10 +95,15 @@ class Bibliotheque:
             return None
         for livre in self.livres:
             if livre.ISBN == ISBN and livre.etat == "disponible":
-                # mark borrowed
+                # mark borrowed tentatively
                 livre.etat = "emprunte"
-                # call user's borrow to create Loan
-                loan = user.borrow(ISBN, exemplaire_id=livre.exemplaire_id)
+                # call user's borrow to create Loan (may raise if user cannot borrow)
+                try:
+                    loan = user.borrow(ISBN, exemplaire_id=livre.exemplaire_id)
+                except Exception:
+                    # restore state on failure and propagate a clean None so callers can show a message
+                    livre.etat = "disponible"
+                    return None
                 # attach loan info to book history
                 if not hasattr(livre, 'history'):
                     livre.history = []

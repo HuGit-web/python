@@ -46,5 +46,10 @@
       "history": []
     }
   ],
-  "reservations": {}
+  "reservations": {
+    "9780747532743": [],
+    "9783140464079": [
+      "alice"
+    ]
+  }
 }
