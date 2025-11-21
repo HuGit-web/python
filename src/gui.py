@@ -5,7 +5,7 @@ from typing import Optional
 
 from .file_manager import BibliothequeAvecFichier
 from .models import AggregatedLivre
-from .users import User
+from .users import User, SUBSCRIPTIONS
 from .utils import get_data_dir
 
 
@@ -104,7 +104,7 @@ class BibliothequeApp(tk.Tk):
         self.combo_genre.pack(side=tk.LEFT, padx=6)
         ttk.Button(searchfrm, text="Rechercher", command=self._on_search).pack(side=tk.LEFT, padx=4)
 
-        cols = ("#", "Titre", "Auteur", "ISBN", "Exemplaire", "Etat", "Dispo/Total")
+        cols = ("#", "Titre", "Auteur", "Genre", "ISBN", "Exemplaire", "Etat", "Dispo/Total")
         self.tree = ttk.Treeview(left, columns=cols, show="headings")
         for c in cols:
             self.tree.heading(c, text=c)
@@ -126,7 +126,8 @@ class BibliothequeApp(tk.Tk):
         ttk.Button(self.admin_frame, text="Renouveler abonnement utilisateur", command=self._admin_renew_subscription).pack(side=tk.LEFT, padx=4)
         ttk.Button(self.admin_frame, text="Marquer pénalités payées", command=self._admin_mark_penalties_paid).pack(side=tk.LEFT, padx=4)
         ttk.Button(self.admin_frame, text="Modifier type d'abonnement", command=self._admin_change_subscription).pack(side=tk.LEFT, padx=4)
-        
+        ttk.Button(self.admin_frame, text="Modifier genre (ISBN)", command=self._admin_set_genre).pack(side=tk.LEFT, padx=4)
+        ttk.Button(self.admin_frame, text="Modifier genre (sélection)", command=self._admin_set_genre_selected).pack(side=tk.LEFT, padx=4)
         ttk.Button(self.admin_frame, text="Stats bibliothèque", command=self._admin_show_stats).pack(side=tk.LEFT, padx=4)
 
         
@@ -136,6 +137,9 @@ class BibliothequeApp(tk.Tk):
         ttk.Label(right_inner, text="Abonnement:").pack(anchor=tk.W)
         self.lbl_sub = ttk.Label(right_inner, text="(aucun)")
         self.lbl_sub.pack(anchor=tk.W, pady=(0, 8))
+        # Show subscription limits (max emprunts, durée)
+        self.lbl_limits = ttk.Label(right_inner, text="Limites: -")
+        self.lbl_limits.pack(anchor=tk.W, pady=(0, 8))
         ttk.Button(right_inner, text="Recommandations", command=self._show_recommendations).pack(fill=tk.X, pady=4)
 
         ttk.Label(right_inner, text="Prêts en cours:").pack(anchor=tk.W)
@@ -182,6 +186,7 @@ class BibliothequeApp(tk.Tk):
     def _show_register(self):
         dlg = tk.Toplevel(self)
         dlg.title("S'inscrire")
+        dlg.geometry("340x220")
         ttk.Label(dlg, text="Nom d'utilisateur:").grid(column=0, row=0, sticky=tk.W, padx=6, pady=6)
         e_user = ttk.Entry(dlg)
         e_user.grid(column=1, row=0, padx=6)
@@ -192,6 +197,10 @@ class BibliothequeApp(tk.Tk):
         e_sub = ttk.Entry(dlg)
         e_sub.insert(0, "basique")
         e_sub.grid(column=1, row=2, padx=6)
+        # Option to create an admin user at registration
+        is_admin_var = tk.BooleanVar(value=False)
+        chk_admin = ttk.Checkbutton(dlg, text="Administrateur", variable=is_admin_var)
+        chk_admin.grid(column=0, row=3, columnspan=2, pady=(4, 6))
 
         def do_register():
             uname = e_user.get().strip()
@@ -203,13 +212,14 @@ class BibliothequeApp(tk.Tk):
             if any(u.username == uname for u in self.users):
                 messagebox.showwarning("Existe", "Nom d'utilisateur déjà utilisé")
                 return
-            new = User.create(uname, pwd, subscription_type=sub)
+            # allow creating an admin account if checkbox checked
+            new = User.create(uname, pwd, subscription_type=sub, is_admin=bool(is_admin_var.get()))
             self.users.append(new)
             BibliothequeAvecFichier.sauvegarder_users(self.users, str(self.users_file))
             messagebox.showinfo("Ok", "Compte créé. Connectez-vous.")
             dlg.destroy()
 
-        ttk.Button(dlg, text="S'inscrire", command=do_register).grid(column=0, row=3, columnspan=2, pady=8)
+        ttk.Button(dlg, text="S'inscrire", command=do_register).grid(column=0, row=4, columnspan=2, pady=8)
 
     def _on_login(self):
         if not self.current_user:
@@ -279,6 +289,7 @@ class BibliothequeApp(tk.Tk):
             rep = lv_list[0]
             titre = getattr(rep, 'titre', '')
             auteur = getattr(rep, 'auteur', '')
+            genre = getattr(rep, 'genre', '')
             
             
             try:
@@ -310,7 +321,7 @@ class BibliothequeApp(tk.Tk):
                 etat = 'partiellement disponible'
             
             ex_id = '-'
-            self.tree.insert("", tk.END, values=(idx, titre, auteur, isbn, ex_id, etat, dispo_txt))
+            self.tree.insert("", tk.END, values=(idx, titre, auteur, genre, isbn, ex_id, etat, dispo_txt))
 
     def _borrow_selected(self):
         if not self.current_user:
@@ -321,7 +332,7 @@ class BibliothequeApp(tk.Tk):
             messagebox.showwarning("Sélection", "Sélectionnez un livre")
             return
         item = self.tree.item(sel[0])
-        isbn = str(item['values'][3]).strip()
+        isbn = str(item['values'][4]).strip()
         try:
             livre = self.biblio.emprunter_exemplaire(isbn, self.current_user)
         except ValueError as e:
@@ -349,7 +360,7 @@ class BibliothequeApp(tk.Tk):
             messagebox.showwarning("Sélection", "Sélectionnez un livre")
             return
         item = self.tree.item(sel[0])
-        isbn = str(item['values'][3]).strip()
+        isbn = str(item['values'][4]).strip()
         ok = self.biblio.reserver_livre(isbn, user_obj=self.current_user, users_file=str(self.users_file))
         if ok:
             
@@ -370,6 +381,10 @@ class BibliothequeApp(tk.Tk):
         if not self.current_user:
             self.lbl_pen.config(text="0.00")
             self.lbl_sub.config(text="(aucun)")
+            try:
+                self.lbl_limits.config(text="Limites: -")
+            except Exception:
+                pass
             # ensure active loans mapping exists
             self._active_loans = []
             return
@@ -385,8 +400,32 @@ class BibliothequeApp(tk.Tk):
         if getattr(self.current_user, 'subscription', None):
             sub = self.current_user.subscription
             self.lbl_sub.config(text=f"{sub.type} — expire le {sub.date_expiration}")
+            try:
+                # ensure monthly reset logic runs (will reset monthly_emprunts when month changed)
+                try:
+                    _ = self.current_user.can_borrow()
+                except Exception:
+                    pass
+                info = SUBSCRIPTIONS.get(sub.type, {})
+                monthly_limit = info.get('monthly_limit', None)
+                duree = info.get('duree_jours', '?')
+                current = int(getattr(self.current_user, 'monthly_emprunts', 0) or 0)
+                if monthly_limit is None:
+                    limits_txt = f"Limites: Illimité, durée {duree} jours — Emprunts ce mois: {current}"
+                else:
+                    limits_txt = f"Limites: Emprunts ce mois: {current}/{int(monthly_limit)} , durée {duree} jours"
+                self.lbl_limits.config(text=limits_txt)
+            except Exception:
+                try:
+                    self.lbl_limits.config(text="Limites: -")
+                except Exception:
+                    pass
         else:
             self.lbl_sub.config(text="(aucun)")
+            try:
+                self.lbl_limits.config(text="Limites: -")
+            except Exception:
+                pass
 
     def _show_recommendations(self):
         if not self.current_user:
@@ -500,22 +539,29 @@ class BibliothequeApp(tk.Tk):
         e_a = ttk.Entry(dlg); e_a.grid(column=1, row=1, padx=6)
         ttk.Label(dlg, text="ISBN:").grid(column=0, row=2, padx=6, pady=4)
         e_is = ttk.Entry(dlg); e_is.grid(column=1, row=2, padx=6)
-        ttk.Label(dlg, text="Exemplaire ID:").grid(column=0, row=3, padx=6, pady=4)
-        e_id = ttk.Entry(dlg); e_id.grid(column=1, row=3, padx=6)
+        ttk.Label(dlg, text="Genre:").grid(column=0, row=3, padx=6, pady=4)
+        e_gen = ttk.Entry(dlg); e_gen.grid(column=1, row=3, padx=6)
+        ttk.Label(dlg, text="Exemplaire ID:").grid(column=0, row=4, padx=6, pady=4)
+        e_id = ttk.Entry(dlg); e_id.grid(column=1, row=4, padx=6)
 
         def do_add():
-            t = e_t.get().strip(); a = e_a.get().strip(); i = e_is.get().strip(); ex = e_id.get().strip()
+            t = e_t.get().strip(); a = e_a.get().strip(); i = e_is.get().strip(); gen = e_gen.get().strip(); ex = e_id.get().strip()
             if not (t and a and i and ex):
                 messagebox.showwarning("Champs manquants", "Remplissez tous les champs")
                 return
-            self.biblio.ajouter_exemplaire(t, a, i, ex)
+            # try to pass genre to ajouter_exemplaire; fall back if signature doesn't accept it
+            try:
+                self.biblio.ajouter_exemplaire(t, a, i, ex, genre=gen if gen else None)
+            except TypeError:
+                self.biblio.ajouter_exemplaire(t, a, i, ex)
             try:
                 self.biblio.sauvegarder(str(self.data_file))
             except Exception as e:
                 messagebox.showerror("Erreur", f"Echec sauvegarde: {e}")
             dlg.destroy(); self._refresh_list()
 
-        ttk.Button(dlg, text="Ajouter", command=do_add).grid(column=0, row=4, columnspan=2, pady=8)
+        # place the Add button on the dialog (row adjusted for new Genre field)
+        ttk.Button(dlg, text="Ajouter", command=do_add).grid(column=0, row=5, columnspan=2, pady=8)
 
     def _admin_delete_by_isbn(self):
         if not self.current_user or not self.current_user.is_admin:
@@ -627,6 +673,78 @@ class BibliothequeApp(tk.Tk):
         except Exception as e:
             messagebox.showerror("Erreur", f"Impossible de modifier l'abonnement: {e}")
 
+    def _admin_set_genre(self):
+        if not self.current_user or not self.current_user.is_admin:
+            messagebox.showwarning("Accès refusé", "Administrateur requis")
+            return
+        isbn = simpledialog.askstring("Modifier genre", "Entrez ISBN:")
+        if not isbn:
+            return
+        isbn = isbn.strip()
+        new_genre = simpledialog.askstring("Genre", "Entrez genre (ex: Science-fiction):")
+        if new_genre is None:
+            return
+        new_genre = new_genre.strip()
+        updated = False
+        for livre in self.biblio.livres:
+            if str(getattr(livre, 'ISBN', '')).strip() == isbn:
+                try:
+                    livre.genre = new_genre
+                except Exception:
+                    pass
+                updated = True
+        if not updated:
+            messagebox.showinfo("Introuvable", "Aucun livre trouvé pour cet ISBN")
+            return
+        try:
+            BibliothequeAvecFichier.sauvegarder_transactionnel(self.biblio, self.users, str(self.data_file), str(self.users_file))
+        except Exception:
+            try:
+                self.biblio.sauvegarder(str(self.data_file))
+            except Exception:
+                pass
+        messagebox.showinfo("Ok", f"Genre mis à jour pour ISBN {isbn}")
+        self._refresh_list()
+
+    def _admin_set_genre_selected(self):
+        if not self.current_user or not self.current_user.is_admin:
+            messagebox.showwarning("Accès refusé", "Administrateur requis")
+            return
+        sel = self.tree.selection()
+        if not sel:
+            messagebox.showwarning("Sélection", "Sélectionnez un livre dans la liste")
+            return
+        item = self.tree.item(sel[0])
+        try:
+            isbn = str(item['values'][4]).strip()
+        except Exception:
+            messagebox.showerror("Erreur", "Impossible de lire l'ISBN de la sélection")
+            return
+        new_genre = simpledialog.askstring("Genre", "Entrez nouveau genre:")
+        if new_genre is None:
+            return
+        new_genre = new_genre.strip()
+        updated = False
+        for livre in self.biblio.livres:
+            if str(getattr(livre, 'ISBN', '')).strip() == isbn:
+                try:
+                    livre.genre = new_genre
+                except Exception:
+                    pass
+                updated = True
+        if not updated:
+            messagebox.showinfo("Introuvable", "Aucun livre trouvé pour cet ISBN")
+            return
+        try:
+            BibliothequeAvecFichier.sauvegarder_transactionnel(self.biblio, self.users, str(self.data_file), str(self.users_file))
+        except Exception:
+            try:
+                self.biblio.sauvegarder(str(self.data_file))
+            except Exception:
+                pass
+        messagebox.showinfo("Ok", f"Genre mis à jour pour ISBN {isbn}")
+        self._refresh_list()
+
     def _admin_trim_exemplars(self):
         if not self.current_user or not self.current_user.is_admin:
             messagebox.showwarning("Accès refusé", "Administrateur requis")
@@ -655,7 +773,7 @@ class BibliothequeApp(tk.Tk):
             messagebox.showwarning("Sélection", "Sélectionnez un livre")
             return
         item = self.tree.item(sel[0])
-        isbn = str(item['values'][3]).strip()
+        isbn = str(item['values'][4]).strip()
         exs = self.biblio.trouver_exemplaires(isbn)
         dlg = tk.Toplevel(self)
         dlg.title(f"Exemplaires de {isbn}")
@@ -716,7 +834,7 @@ class BibliothequeApp(tk.Tk):
             messagebox.showwarning("Sélection", "Sélectionnez un livre")
             return
         item = self.tree.item(sel[0])
-        isbn = str(item['values'][3]).strip()
+        isbn = str(item['values'][4]).strip()
         
         entries = []
         for lv in self.biblio.trouver_exemplaires(isbn):
@@ -744,7 +862,7 @@ class BibliothequeApp(tk.Tk):
             messagebox.showwarning("Sélection", "Sélectionnez un livre")
             return
         item = self.tree.item(sel[0])
-        isbn = str(item['values'][3]).strip()
+        isbn = str(item['values'][4]).strip()
         dlg = tk.Toplevel(self)
         dlg.title("Noter et commenter")
         frm = ttk.Frame(dlg, padding=8)
@@ -782,7 +900,7 @@ class BibliothequeApp(tk.Tk):
             messagebox.showwarning("Sélection", "Sélectionnez un livre")
             return
         item = self.tree.item(sel[0])
-        isbn = str(item['values'][3]).strip()
+        isbn = str(item['values'][4]).strip()
         
         reviews = []
         for lv in self.biblio.trouver_exemplaires(isbn):

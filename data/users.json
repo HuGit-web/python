@@ -8,18 +8,43 @@
       "date_debut": "2025-11-21",
       "date_expiration": "2026-05-08"
     },
-    "loans": [],
+    "loans": [
+      {
+        "isbn": "9781501142970",
+        "exemplaire_id": null,
+        "date_emprunt": "2025-11-21",
+        "date_retour_prevue": "2025-12-05",
+        "date_retour_effective": "2025-11-21",
+        "penalite_acquise": 0.0
+      },
+      {
+        "isbn": "9780747532743",
+        "exemplaire_id": null,
+        "date_emprunt": "2025-11-21",
+        "date_retour_prevue": "2025-12-05",
+        "date_retour_effective": "2025-11-21",
+        "penalite_acquise": 0.0
+      },
+      {
+        "isbn": "9780747532743",
+        "exemplaire_id": null,
+        "date_emprunt": "2025-11-21",
+        "date_retour_prevue": "2025-12-05",
+        "date_retour_effective": "2025-11-21",
+        "penalite_acquise": 0.0
+      }
+    ],
     "reservations": [
       {
-        "isbn": "9783140464079",
+        "isbn": "9780747532743",
         "exemplaire_id": null,
         "date_reservation": "2025-11-21"
       }
     ],
     "penalites": 0.0,
     "notifications": [],
-    "monthly_emprunts": 0,
-    "last_reset": null
+    "monthly_emprunts": 3,
+    "last_reset": "2025-11-01"
   },
   {
     "username": "bob",
@@ -42,9 +67,9 @@
     "_pwd_hash": "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4",
     "is_admin": false,
     "subscription": {
-      "type": "premium",
+      "type": "VIP",
       "date_debut": "2025-11-21",
-      "date_expiration": "2027-07-31"
+      "date_expiration": "2026-10-23"
     },
     "loans": [
       {
@@ -72,10 +97,32 @@
         "penalite_acquise": 0.0
       }
     ],
-    "reservations": [],
+    "reservations": [
+      {
+        "isbn": "9780747532743",
+        "exemplaire_id": null,
+        "date_reservation": "2025-11-21"
+      }
+    ],
     "penalites": 0.0,
     "notifications": [],
     "monthly_emprunts": 3,
     "last_reset": "2025-11-01"
+  },
+  {
+    "username": "prof",
+    "_pwd_hash": "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4",
+    "is_admin": true,
+    "subscription": {
+      "type": "VIP",
+      "date_debut": "2025-11-21",
+      "date_expiration": "2026-10-23"
+    },
+    "loans": [],
+    "reservations": [],
+    "penalites": 0.0,
+    "notifications": [],
+    "monthly_emprunts": 0,
+    "last_reset": null
   }
 ]

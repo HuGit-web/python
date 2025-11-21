@@ -209,6 +209,17 @@ class BibliothequeAvecFichier(Bibliotheque):
             new.notifications.append(message)
             users.append(new)
         BibliothequeAvecFichier.sauvegarder_users(users, users_filepath)
+        # Simulate sending an email by appending to a log file in data/
+        try:
+            from .utils import get_data_dir
+            data_dir = get_data_dir()
+            logp = data_dir / "sent_emails.log"
+            from datetime import datetime
+            with logp.open("a", encoding="utf-8") as lf:
+                lf.write(f"{datetime.utcnow().isoformat()}Z\t{username}\t{message}\n")
+        except Exception:
+            # Don't fail notifier on logging errors
+            pass
 
     def sauvegarder_transactionnel(self, users: list, bib_filepath: str, users_filepath: str) -> None:
         bib_p = Path(bib_filepath)

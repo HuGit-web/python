@@ -6,9 +6,11 @@ import hashlib
 
 
 SUBSCRIPTIONS = {
-    "basique": {"max_emprunts": 1, "duree_jours": 14, "penalite_par_jour": 0.5},
-    "premium": {"max_emprunts": 3, "duree_jours": 21, "penalite_par_jour": 0.5},
-    "VIP": {"max_emprunts": 10, "duree_jours": 28, "penalite_par_jour": 0.3},
+    # monthly_limit: maximum number of borrow operations allowed per calendar month (None = unlimited)
+    # Note: each borrow call creates one Loan (one book per emprunt)
+    "basique": {"monthly_limit": 10, "duree_jours": 14, "penalite_par_jour": 0.5},
+    "premium": {"monthly_limit": 30, "duree_jours": 21, "penalite_par_jour": 0.5},
+    "VIP": {"monthly_limit": None, "duree_jours": 28, "penalite_par_jour": 0.3},
 }
 
 
@@ -94,19 +96,18 @@ class User:
         today = date.today()
         if self.subscription.date_expiration < today:
             return False
-        today = date.today()
+        # Reset monthly counter if month changed
         if self.last_reset is None or (self.last_reset.year, self.last_reset.month) != (today.year, today.month):
             self.monthly_emprunts = 0
             self.last_reset = today.replace(day=1)
 
         sub_info = SUBSCRIPTIONS.get(self.subscription.type, SUBSCRIPTIONS["basique"])
-        max_emprunts = sub_info["max_emprunts"]
-        active = sum(1 for l in self.loans if l.date_retour_effective is None)
+        monthly_limit = sub_info.get("monthly_limit", None)
 
-        if active >= max_emprunts:
-            return False
+        if monthly_limit is None:
+            return True
 
-        return self.monthly_emprunts < max_emprunts
+        return int(self.monthly_emprunts) < int(monthly_limit)
 
     def renew_subscription(self, extra_days: int) -> date | None:
         

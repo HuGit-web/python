@@ -98,7 +98,7 @@ class Bibliotheque:
                 return True
         return False
 
-    def ajouter_exemplaire(self, titre: str, auteur: str, ISBN: str, exemplaire_id: str) -> None:
+    def ajouter_exemplaire(self, titre: str, auteur: str, ISBN: str, exemplaire_id: str, genre: str | None = None) -> None:
         if not ISBN:
             return
         ag = None
@@ -109,6 +109,8 @@ class Bibliotheque:
         if ag is None:
             
             ag = AggregatedLivre(titre, auteur, ISBN, total=1, disponibles=1)
+            if genre:
+                ag.genre = genre
             if exemplaire_id:
                 ag.exemplaires_details.append({'exemplaire_id': exemplaire_id, 'etat': 'disponible'})
             else:
@@ -121,6 +123,11 @@ class Bibliotheque:
         
         ag.nb_exemplaire = int(getattr(ag, 'nb_exemplaire', 0)) + 1
         ag.disponibles = int(getattr(ag, 'disponibles', 0)) + 1
+        if genre:
+            try:
+                ag.genre = genre
+            except Exception:
+                pass
         if exemplaire_id:
             ag.exemplaires_details.append({'exemplaire_id': exemplaire_id, 'etat': 'disponible'})
         else:
@@ -137,17 +144,68 @@ class Bibliotheque:
         username = getattr(user, 'username', None)
         if queue and queue[0] != username:
             raise ValueError("Une réservation existe et vous n'êtes pas en tête de file")
-
         for livre in self.livres:
             if getattr(livre, 'ISBN', None) != ISBN:
                 continue
-            if livre.disponibles <= 0:
-                break
-            livre.disponibles -= 1
+
+            # If per-exemplar details exist, select an available exemplar
+            details = getattr(livre, 'exemplaires_details', []) or []
+            if details:
+                found = None
+                for d in details:
+                    if str(d.get('etat', 'disponible')).lower() == 'disponible':
+                        found = d
+                        break
+                if found is None:
+                    # no available exemplar in details
+                    continue
+
+                # mark exemplar as borrowed
+                exid = found.get('exemplaire_id')
+                found['etat'] = 'emprunte'
+                livre.disponibles = max(0, int(getattr(livre, 'disponibles', 0)) - 1)
+                try:
+                    loan = user.borrow(ISBN, exid)
+                except Exception:
+                    # revert on failure
+                    found['etat'] = 'disponible'
+                    livre.disponibles = min(livre.nb_exemplaire, int(getattr(livre, 'disponibles', 0)) + 1)
+                    raise
+
+                entry = {}
+                try:
+                    entry = loan.to_dict()
+                    entry['username'] = username
+                except Exception:
+                    entry = {'username': username}
+                livre.history.append(entry)
+                if queue and queue[0] == username:
+                    queue.pop(0)
+                return livre
+
+            # No per-exemplar details present; fall back to aggregate behavior but synthesize an exemplar
+            if int(getattr(livre, 'disponibles', 0)) <= 0:
+                continue
+
+            # synthesize an exemplar id and record it in details so future returns find it
+            synth_idx = len(getattr(livre, 'history', [])) + 1
+            exid = f"{ISBN}-synth{synth_idx}"
             try:
-                loan = user.borrow(ISBN)
+                livre.exemplaires_details.append({'exemplaire_id': exid, 'etat': 'emprunte'})
             except Exception:
-                livre.disponibles += 1
+                livre.exemplaires_details = [{'exemplaire_id': exid, 'etat': 'emprunte'}]
+            livre.nb_exemplaire = max(int(getattr(livre, 'nb_exemplaire', 0)), len(livre.exemplaires_details))
+            livre.disponibles = max(0, int(getattr(livre, 'disponibles', 0)) - 1)
+            try:
+                loan = user.borrow(ISBN, exid)
+            except Exception:
+                # revert synthesized detail
+                try:
+                    if livre.exemplaires_details and livre.exemplaires_details[-1].get('exemplaire_id') == exid:
+                        livre.exemplaires_details.pop()
+                except Exception:
+                    pass
+                livre.disponibles = min(livre.nb_exemplaire, int(getattr(livre, 'disponibles', 0)) + 1)
                 raise
 
             entry = {}
@@ -179,7 +237,25 @@ class Bibliotheque:
             return montant
         for livre in self.livres:
             if getattr(livre, 'ISBN', None) == isbn:
-                livre.disponibles = min(livre.nb_exemplaire, livre.disponibles + 1)
+                # try to mark the matching exemplar detail as available again
+                updated_detail = False
+                for d in getattr(livre, 'exemplaires_details', []):
+                    if d.get('exemplaire_id') == exemplaire_id:
+                        # only set to disponible if not endommagé/perdu
+                        if str(d.get('etat', '')).lower() in ('emprunte', 'emprunt'):
+                            d['etat'] = 'disponible'
+                        updated_detail = True
+                        break
+
+                # update aggregate available count
+                if updated_detail:
+                    # recompute disponibles from details to be safe
+                    try:
+                        livre.disponibles = sum(1 for d in getattr(livre, 'exemplaires_details', []) if str(d.get('etat', 'disponible')).lower() == 'disponible')
+                    except Exception:
+                        livre.disponibles = min(livre.nb_exemplaire, int(getattr(livre, 'disponibles', 0)) + 1)
+                else:
+                    livre.disponibles = min(livre.nb_exemplaire, int(getattr(livre, 'disponibles', 0)) + 1)
                 queue = self.reservations.get(livre.ISBN, [])
                 if queue and users_file:
                     next_username = queue[0]
@@ -197,10 +273,9 @@ class Bibliotheque:
         q = self.reservations.setdefault(ISBN, [])
         if username in q:
             return False
-        
-        for livre in self.livres:
-            if getattr(livre, 'ISBN', None) == ISBN and getattr(livre, 'disponibles', 0) > 0:
-                return False
+        # Allow pre-reservations even if copies are currently available.
+        # (Previously reservations were only allowed when disponibles == 0.)
+        # Append username to reservation queue.
         q.append(username)
         if user_obj is not None:
             try:
@@ -209,10 +284,21 @@ class Bibliotheque:
                 user_obj.reservations.append(r)
             except Exception:
                 pass
+            # If a users file path is provided, update the persisted users list
+            # by loading existing users, updating/adding this user, then saving.
             if users_file:
-                from .file_manager import BibliothequeAvecFichier
                 try:
-                    BibliothequeAvecFichier.sauvegarder_users([user_obj] + [], users_file)
+                    from .file_manager import BibliothequeAvecFichier
+                    existing = BibliothequeAvecFichier.charger_users(users_file)
+                    updated = False
+                    for i, u in enumerate(existing):
+                        if getattr(u, 'username', None) == username:
+                            existing[i] = user_obj
+                            updated = True
+                            break
+                    if not updated:
+                        existing.append(user_obj)
+                    BibliothequeAvecFichier.sauvegarder_users(existing, users_file)
                 except Exception:
                     pass
         return True

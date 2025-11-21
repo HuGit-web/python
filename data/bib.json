@@ -8,7 +8,18 @@
       "exemplaire_id": null,
       "etat": "disponible",
       "genre": null,
-      "reviews": [],
+      "reviews": [
+        {
+          "username": "bob",
+          "rating": 1,
+          "comment": "fefe"
+        },
+        {
+          "username": "hugo",
+          "rating": 2,
+          "comment": "fee"
+        }
+      ],
       "history": [
         {
           "isbn": "9780747532743",
@@ -27,6 +38,24 @@
           "date_retour_effective": null,
           "penalite_acquise": 0.0,
           "username": "hugo"
+        },
+        {
+          "isbn": "9780747532743",
+          "exemplaire_id": null,
+          "date_emprunt": "2025-11-21",
+          "date_retour_prevue": "2025-12-05",
+          "date_retour_effective": null,
+          "penalite_acquise": 0.0,
+          "username": "alice"
+        },
+        {
+          "isbn": "9780747532743",
+          "exemplaire_id": null,
+          "date_emprunt": "2025-11-21",
+          "date_retour_prevue": "2025-12-05",
+          "date_retour_effective": null,
+          "penalite_acquise": 0.0,
+          "username": "alice"
         }
       ],
       "exemplaires": {
@@ -102,7 +131,17 @@
       "etat": "disponible",
       "genre": null,
       "reviews": [],
-      "history": [],
+      "history": [
+        {
+          "isbn": "9781501142970",
+          "exemplaire_id": null,
+          "date_emprunt": "2025-11-21",
+          "date_retour_prevue": "2025-12-05",
+          "date_retour_effective": null,
+          "penalite_acquise": 0.0,
+          "username": "alice"
+        }
+      ],
       "exemplaires": {
         "total": 5,
         "disponibles": 5
@@ -220,6 +259,105 @@
           "date_retour_effective": null,
           "penalite_acquise": 0.0,
           "username": "bob"
+        },
+        {
+          "isbn": "56454565874",
+          "exemplaire_id": null,
+          "date_emprunt": "2025-11-21",
+          "date_retour_prevue": "2025-12-12",
+          "date_retour_effective": null,
+          "penalite_acquise": 0.0,
+          "username": "bob"
+        },
+        {
+          "isbn": "56454565874",
+          "exemplaire_id": null,
+          "date_emprunt": "2025-11-21",
+          "date_retour_prevue": "2025-12-12",
+          "date_retour_effective": null,
+          "penalite_acquise": 0.0,
+          "username": "bob"
+        },
+        {
+          "isbn": "56454565874",
+          "exemplaire_id": null,
+          "date_emprunt": "2025-11-21",
+          "date_retour_prevue": "2025-12-12",
+          "date_retour_effective": null,
+          "penalite_acquise": 0.0,
+          "username": "bob"
+        },
+        {
+          "isbn": "56454565874",
+          "exemplaire_id": null,
+          "date_emprunt": "2025-11-21",
+          "date_retour_prevue": "2025-12-12",
+          "date_retour_effective": null,
+          "penalite_acquise": 0.0,
+          "username": "bob"
+        },
+        {
+          "isbn": "56454565874",
+          "exemplaire_id": null,
+          "date_emprunt": "2025-11-21",
+          "date_retour_prevue": "2025-12-12",
+          "date_retour_effective": null,
+          "penalite_acquise": 0.0,
+          "username": "bob"
+        },
+        {
+          "isbn": "56454565874",
+          "exemplaire_id": null,
+          "date_emprunt": "2025-11-21",
+          "date_retour_prevue": "2025-12-12",
+          "date_retour_effective": null,
+          "penalite_acquise": 0.0,
+          "username": "bob"
+        },
+        {
+          "isbn": "56454565874",
+          "exemplaire_id": null,
+          "date_emprunt": "2025-11-21",
+          "date_retour_prevue": "2025-12-12",
+          "date_retour_effective": null,
+          "penalite_acquise": 0.0,
+          "username": "bob"
+        },
+        {
+          "isbn": "56454565874",
+          "exemplaire_id": null,
+          "date_emprunt": "2025-11-21",
+          "date_retour_prevue": "2025-12-12",
+          "date_retour_effective": null,
+          "penalite_acquise": 0.0,
+          "username": "bob"
+        },
+        {
+          "isbn": "56454565874",
+          "exemplaire_id": null,
+          "date_emprunt": "2025-11-21",
+          "date_retour_prevue": "2025-12-12",
+          "date_retour_effective": null,
+          "penalite_acquise": 0.0,
+          "username": "bob"
+        },
+        {
+          "isbn": "56454565874",
+          "exemplaire_id": null,
+          "date_emprunt": "2025-11-21",
+          "date_retour_prevue": "2025-12-12",
+          "date_retour_effective": null,
+          "penalite_acquise": 0.0,
+          "username": "bob"
+        },
+        {
+          "isbn": "56454565874",
+          "exemplaire_id": "56454565874-excc108a45",
+          "date_emprunt": "2025-11-21",
+          "date_retour_prevue": "2025-12-12",
+          "date_retour_effective": null,
+          "penalite_acquise": 0.0,
+          "username": "bob"
         }
       ],
       "exemplaires": {
@@ -229,7 +367,7 @@
       "exemplaires_details": [
         {
           "exemplaire_id": "56454565874-excc108a45",
-          "etat": "disponible"
+          "etat": "emprunte"
         },
         {
           "exemplaire_id": "56454565874-ex1e1e8495",
@@ -285,10 +423,34 @@
           "etat": "disponible"
         }
       ]
+    },
+    {
+      "type": "Livre",
+      "titre": "La vie",
+      "auteur": "Homme",
+      "ISBN": "22222",
+      "exemplaire_id": null,
+      "etat": "disponible",
+      "genre": "action",
+      "reviews": [],
+      "history": [],
+      "exemplaires": {
+        "total": 1,
+        "disponibles": 1
+      },
+      "exemplaires_details": [
+        {
+          "exemplaire_id": "555",
+          "etat": "disponible"
+        }
+      ]
     }
   ],
   "reservations": {
-    "9780747532743": [],
+    "9780747532743": [
+      "hugo",
+      "alice"
+    ],
     "9783140464079": [
       "alice"
     ],
@@ -316,6 +478,10 @@
     "9783140464079": {
       "total": 5,
       "disponibles": 5
+    },
+    "22222": {
+      "total": 1,
+      "disponibles": 1
     }
   }
 }
