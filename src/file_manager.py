@@ -11,10 +11,7 @@ from .users import User
 
 
 class BibliothequeAvecFichier(Bibliotheque):
-    """Extension de Bibliotheque avec operations de sauvegarde / chargement / export.
-
-    Les methodes lèvent `ErreurFichier` en cas de probleme et n'effectuent pas de print.
-    """
+    
 
     def sauvegarder(self, filepath: str) -> None:
         p = Path(filepath)
@@ -112,6 +109,16 @@ class BibliothequeAvecFichier(Bibliotheque):
                     livre.exemplaires_details = list(livre_dic.get('exemplaires_details', []))
                 except Exception:
                     livre.exemplaires_details = []
+            # If per-exemplaire details are present, reconcile aggregate counts
+            if getattr(livre, 'exemplaires_details', None):
+                try:
+                    details = list(livre.exemplaires_details)
+                    livre.nb_exemplaire = len(details)
+                    # count entries whose 'etat' is 'disponible'
+                    livre.disponibles = sum(1 for d in details if str(d.get('etat', 'disponible')).lower() == 'disponible')
+                except Exception:
+                    # keep existing counts on error
+                    pass
             self.livres.append(livre)
 
         self.reservations = {}
@@ -123,8 +130,8 @@ class BibliothequeAvecFichier(Bibliotheque):
             
             ex_map = data.get("exemplaires")
             if isinstance(ex_map, dict):
-                
-                self.exemplaires = {str(k): v for k, v in ex_map.items()}
+                # Normalize keys to stripped strings to match model ISBN normalization
+                self.exemplaires = {str(k).strip(): v for k, v in ex_map.items()}
             else:
                 self.exemplaires = {}
         else:
@@ -253,12 +260,7 @@ class BibliothequeAvecFichier(Bibliotheque):
             raise ErreurFichier(f"Erreur lors de la sauvegarde transactionnelle: {e}")
 
     def reconcile_reservations(self, users: list, persist: bool = False, users_path: str | None = None, bib_path: str | None = None) -> None:
-        """Reconcile reservation queues between the library and the provided users list.
-
-        - Remove usernames from bibliotheque.reservations that are not present in users.
-        - Ensure each user's reservations are represented in bibliotheque.reservations.
-        If persist is True, save both users and bib to provided paths (users_path, bib_path).
-        """
+        
         valid_usernames = {getattr(u, 'username', None) for u in users}
         for isbn, queue in list(getattr(self, 'reservations', {}).items()):
             newq = [u for u in queue if u in valid_usernames]

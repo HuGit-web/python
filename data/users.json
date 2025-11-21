@@ -44,13 +44,30 @@
     "subscription": {
       "type": "premium",
       "date_debut": "2025-11-21",
-      "date_expiration": "2026-07-31"
+      "date_expiration": "2027-07-31"
     },
-    "loans": [],
+    "loans": [
+      {
+        "isbn": "9780747532743",
+        "exemplaire_id": null,
+        "date_emprunt": "2025-11-21",
+        "date_retour_prevue": "2025-12-12",
+        "date_retour_effective": "2025-11-21",
+        "penalite_acquise": 0.0
+      },
+      {
+        "isbn": "56454565874",
+        "exemplaire_id": null,
+        "date_emprunt": "2025-11-21",
+        "date_retour_prevue": "2025-12-12",
+        "date_retour_effective": "2025-11-21",
+        "penalite_acquise": 0.0
+      }
+    ],
     "reservations": [],
     "penalites": 0.0,
     "notifications": [],
-    "monthly_emprunts": 0,
-    "last_reset": null
+    "monthly_emprunts": 2,
+    "last_reset": "2025-11-01"
   }
 ]

@@ -37,13 +37,7 @@ def main_demo() -> None:
 
 
 def run_tp1_demo() -> None:
-    """Run the TP1 demo flow inside the interface module.
-
-    - create sample books
-    - perform search and deletion
-    - save JSON and export CSV into project-level `data/` directory
-    - reload from saved JSON
-    """
+    
     project_root = Path(__file__).resolve().parent.parent
     data_dir = project_root / "data"
     data_dir.mkdir(parents=True, exist_ok=True)

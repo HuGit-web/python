@@ -320,7 +320,7 @@ class BibliothequeApp(tk.Tk):
             messagebox.showwarning("Sélection", "Sélectionnez un livre")
             return
         item = self.tree.item(sel[0])
-        isbn = item['values'][3]
+        isbn = str(item['values'][3]).strip()
         try:
             livre = self.biblio.emprunter_exemplaire(isbn, self.current_user)
         except ValueError as e:
@@ -348,7 +348,7 @@ class BibliothequeApp(tk.Tk):
             messagebox.showwarning("Sélection", "Sélectionnez un livre")
             return
         item = self.tree.item(sel[0])
-        isbn = item['values'][3]
+        isbn = str(item['values'][3]).strip()
         ok = self.biblio.reserver_livre(isbn, user_obj=self.current_user, users_file=str(self.users_file))
         if ok:
             
@@ -369,9 +369,13 @@ class BibliothequeApp(tk.Tk):
         if not self.current_user:
             self.lbl_pen.config(text="0.00")
             self.lbl_sub.config(text="(aucun)")
+            # ensure active loans mapping exists
+            self._active_loans = []
             return
-        for l in self.current_user.loans:
-            status = "en cours" if l.date_retour_effective is None else "rendu"
+        # Only show active loans (not yet returned) in the "Prêts en cours" list
+        self._active_loans = [l for l in getattr(self.current_user, 'loans', []) if getattr(l, 'date_retour_effective', None) is None]
+        for l in self._active_loans:
+            status = "en cours"
             self.lst_loans.insert(tk.END, f"{l.isbn} (ex:{l.exemplaire_id}) - {status} - due {l.date_retour_prevue}")
         for r in self.current_user.reservations:
             self.lst_res.insert(tk.END, f"{r.isbn} (ex:{r.exemplaire_id}) - {r.date_reservation}")
@@ -410,7 +414,12 @@ class BibliothequeApp(tk.Tk):
             messagebox.showwarning("Sélection", "Sélectionnez un prêt à rendre")
             return
         idx = sel[0]
-        loan = self.current_user.loans[idx]
+        # Map selection index to the active loans list
+        try:
+            loan = self._active_loans[idx]
+        except Exception:
+            messagebox.showerror("Erreur", "Prêt sélectionné invalide")
+            return
         montant = self.biblio.retourner_exemplaire(loan.exemplaire_id, self.current_user, str(self.users_file))
         try:
             BibliothequeAvecFichier.sauvegarder_transactionnel(self.biblio, self.users, str(self.data_file), str(self.users_file))
@@ -645,7 +654,7 @@ class BibliothequeApp(tk.Tk):
             messagebox.showwarning("Sélection", "Sélectionnez un livre")
             return
         item = self.tree.item(sel[0])
-        isbn = item['values'][3]
+        isbn = str(item['values'][3]).strip()
         exs = self.biblio.trouver_exemplaires(isbn)
         dlg = tk.Toplevel(self)
         dlg.title(f"Exemplaires de {isbn}")
@@ -706,7 +715,7 @@ class BibliothequeApp(tk.Tk):
             messagebox.showwarning("Sélection", "Sélectionnez un livre")
             return
         item = self.tree.item(sel[0])
-        isbn = item['values'][3]
+        isbn = str(item['values'][3]).strip()
         
         entries = []
         for lv in self.biblio.trouver_exemplaires(isbn):
@@ -734,7 +743,7 @@ class BibliothequeApp(tk.Tk):
             messagebox.showwarning("Sélection", "Sélectionnez un livre")
             return
         item = self.tree.item(sel[0])
-        isbn = item['values'][3]
+        isbn = str(item['values'][3]).strip()
         dlg = tk.Toplevel(self)
         dlg.title("Noter et commenter")
         frm = ttk.Frame(dlg, padding=8)
@@ -772,7 +781,7 @@ class BibliothequeApp(tk.Tk):
             messagebox.showwarning("Sélection", "Sélectionnez un livre")
             return
         item = self.tree.item(sel[0])
-        isbn = item['values'][3]
+        isbn = str(item['values'][3]).strip()
         
         reviews = []
         for lv in self.biblio.trouver_exemplaires(isbn):

@@ -58,7 +58,6 @@ class Subscription:
         return d
     
     def renew(self, extra_days: int):
-        """Extend the subscription by extra_days from current expiration."""
         self.date_expiration = self.date_expiration + timedelta(days=extra_days)
 
 
@@ -110,7 +109,7 @@ class User:
         return self.monthly_emprunts < max_emprunts
 
     def renew_subscription(self, extra_days: int) -> date | None:
-        """Renew the user's subscription by extra_days. Returns new expiration date or None if no subscription."""
+        
         if not self.subscription:
             return None
         self.subscription.renew(extra_days)

@@ -9,7 +9,17 @@
       "etat": "disponible",
       "genre": null,
       "reviews": [],
-      "history": [],
+      "history": [
+        {
+          "isbn": "9780747532743",
+          "exemplaire_id": null,
+          "date_emprunt": "2025-11-21",
+          "date_retour_prevue": "2025-12-12",
+          "date_retour_effective": null,
+          "penalite_acquise": 0.0,
+          "username": "hugo"
+        }
+      ],
       "exemplaires": {
         "total": 5,
         "disponibles": 5
@@ -147,11 +157,56 @@
           "date_retour_effective": null,
           "penalite_acquise": 0.0,
           "username": "bob"
+        },
+        {
+          "isbn": "56454565874",
+          "exemplaire_id": null,
+          "date_emprunt": "2025-11-21",
+          "date_retour_prevue": "2025-12-12",
+          "date_retour_effective": null,
+          "penalite_acquise": 0.0,
+          "username": "bob"
+        },
+        {
+          "isbn": "56454565874",
+          "exemplaire_id": null,
+          "date_emprunt": "2025-11-21",
+          "date_retour_prevue": "2025-12-12",
+          "date_retour_effective": null,
+          "penalite_acquise": 0.0,
+          "username": "bob"
+        },
+        {
+          "isbn": "56454565874",
+          "exemplaire_id": null,
+          "date_emprunt": "2025-11-21",
+          "date_retour_prevue": "2025-12-12",
+          "date_retour_effective": null,
+          "penalite_acquise": 0.0,
+          "username": "bob"
+        },
+        {
+          "isbn": "56454565874",
+          "exemplaire_id": null,
+          "date_emprunt": "2025-11-21",
+          "date_retour_prevue": "2025-12-12",
+          "date_retour_effective": null,
+          "penalite_acquise": 0.0,
+          "username": "hugo"
+        },
+        {
+          "isbn": "56454565874",
+          "exemplaire_id": null,
+          "date_emprunt": "2025-11-21",
+          "date_retour_prevue": "2025-12-12",
+          "date_retour_effective": null,
+          "penalite_acquise": 0.0,
+          "username": "bob"
         }
       ],
       "exemplaires": {
         "total": 5,
-        "disponibles": 2
+        "disponibles": 4
       },
       "exemplaires_details": [
         {
@@ -215,11 +270,12 @@
     }
   ],
   "reservations": {
-    "9780747532743": [
-      "hugo"
-    ],
+    "9780747532743": [],
     "9783140464079": [
       "alice"
+    ],
+    "9782253005553": [
+      "hugo"
     ]
   },
   "exemplaires": {
@@ -237,7 +293,7 @@
     },
     "56454565874": {
       "total": 5,
-      "disponibles": 2
+      "disponibles": 4
     },
     "9783140464079": {
       "total": 5,
