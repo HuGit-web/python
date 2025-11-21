@@ -47,7 +47,3 @@ pytest -q
 - `data/` est ignoré par `.gitignore` pour éviter de pousser des données runtime.
 - Pour toute modification structurelle, vérifier `src/file_manager.py` (I/O) et `src/users.py`.
 
----
-Si vous voulez, j'ajoute un README plus détaillé (usage GUI, captures d'écran, exemples).
-
-```
