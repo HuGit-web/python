@@ -76,10 +76,11 @@ secrets.json
 *.log
 
 ## Data files (runtime/persistent)
-# Ignore runtime-generated data. If you keep fixtures, move them to data/sample/ and track those explicitly.
-data/bib.json
-data/users.json
-data/catalogue.csv
+# Ignore runtime-generated data and backups. Keep `data/bib.json` and `data/users.json` tracked
+# so the repository contains a minimal working dataset. Backups and temp files remain ignored.
+data/backups/
+data/*.bak
+data/*.tmp
 
 ## Optional: SSH keys (safety)
 # Uncomment if you ever place keys in the repo root by mistake
@@ -90,4 +91,5 @@ data/catalogue.csv
 # .ssh/
 
 # End of .gitignore
+scripts/
 
