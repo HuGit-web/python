@@ -2,9 +2,12 @@ import json
 import csv
 from pathlib import Path
 from typing import Optional
+import tempfile
+import os
 
 from .models import Livre, LivreNumerique, Bibliotheque
 from .exceptions import ErreurFichier
+from .users import User
 
 
 class BibliothequeAvecFichier(Bibliotheque):
@@ -17,9 +20,17 @@ class BibliothequeAvecFichier(Bibliotheque):
         p = Path(filepath)
         try:
             p.parent.mkdir(parents=True, exist_ok=True)
-            data = [livre.to_dict() for livre in self.livres]
-            with p.open("w", encoding="utf-8") as f:
-                json.dump(data, f, ensure_ascii=False, indent=2)
+            data = {
+                "livres": [livre.to_dict() for livre in self.livres],
+                "reservations": getattr(self, "reservations", {}),
+            }
+            # atomic write: write to temp file then replace
+            dirpath = str(p.parent)
+            with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=dirpath, delete=False) as tf:
+                json.dump(data, tf, ensure_ascii=False, indent=2)
+                tf.flush()
+                os.fsync(tf.fileno())
+            os.replace(tf.name, str(p))
         except Exception as e:
             raise ErreurFichier(f"Impossible d'ecrire le fichier '{filepath}': {e}")
 
@@ -34,9 +45,10 @@ class BibliothequeAvecFichier(Bibliotheque):
             raise ErreurFichier(f"Format JSON invalide dans '{filepath}': {e}")
         except Exception as e:
             raise ErreurFichier(f"Impossible de lire '{filepath}': {e}")
-
+        # support new structure: { "livres": [...], "reservations": {ISBN: [usernames]} }
         self.livres.clear()
-        for livre_dic in data:
+        livres_data = data.get("livres") if isinstance(data, dict) else data
+        for livre_dic in livres_data:
             if livre_dic.get("type") == "Livre Numerique":
                 livre = LivreNumerique(
                     livre_dic.get("titre", ""),
@@ -49,8 +61,25 @@ class BibliothequeAvecFichier(Bibliotheque):
                     livre_dic.get("titre", ""),
                     livre_dic.get("auteur", ""),
                     livre_dic.get("ISBN", ""),
+                    exemplaire_id=livre_dic.get("exemplaire_id"),
+                    etat=livre_dic.get("etat", "disponible"),
                 )
+            # load history if present
+            if livre_dic.get("history"):
+                try:
+                    livre.history = livre_dic.get("history", [])
+                except Exception:
+                    livre.history = []
             self.livres.append(livre)
+
+        # load reservations if present
+        self.reservations = {}
+        if isinstance(data, dict):
+            res = data.get("reservations")
+            if isinstance(res, dict):
+                # ensure lists
+                for k, v in res.items():
+                    self.reservations[k] = list(v)
 
     def export_csv(self, filepath: str) -> None:
         p = Path(filepath)
@@ -70,3 +99,134 @@ class BibliothequeAvecFichier(Bibliotheque):
                     ])
         except Exception as e:
             raise ErreurFichier(f"Impossible d'exporter CSV '{filepath}': {e}")
+
+    # --- Users persistence helpers ---
+    @staticmethod
+    def sauvegarder_users(users: list, filepath: str) -> None:
+        p = Path(filepath)
+        try:
+            p.parent.mkdir(parents=True, exist_ok=True)
+            data = [u.to_dict() for u in users]
+            dirpath = str(p.parent)
+            with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=dirpath, delete=False) as tf:
+                json.dump(data, tf, ensure_ascii=False, indent=2)
+                tf.flush()
+                os.fsync(tf.fileno())
+            os.replace(tf.name, str(p))
+        except Exception as e:
+            raise ErreurFichier(f"Impossible d'ecrire le fichier users '{filepath}': {e}")
+
+    @staticmethod
+    def charger_users(filepath: str) -> list:
+        p = Path(filepath)
+        if not p.exists():
+            return []
+        try:
+            with p.open("r", encoding="utf-8") as f:
+                data = json.load(f)
+        except json.JSONDecodeError as e:
+            raise ErreurFichier(f"Format JSON invalide dans users '{filepath}': {e}")
+        except Exception as e:
+            raise ErreurFichier(f"Impossible de lire users '{filepath}': {e}")
+        users = []
+        for ud in data:
+            try:
+                users.append(User.from_dict(ud))
+            except Exception:
+                # skip malformed user entries
+                continue
+        return users
+
+    @staticmethod
+    def notifier_user(username: str, message: str, users_filepath: str) -> None:
+        """Load users, add notification to the matching user, save back."""
+        try:
+            users = BibliothequeAvecFichier.charger_users(users_filepath)
+        except ErreurFichier:
+            users = []
+        updated = False
+        for u in users:
+            if getattr(u, 'username', None) == username:
+                u.notifications.append(message)
+                updated = True
+                break
+        if not updated:
+            # user not found: create a lightweight record
+            from .users import User
+            new = User(username, "")
+            new.notifications.append(message)
+            users.append(new)
+        BibliothequeAvecFichier.sauvegarder_users(users, users_filepath)
+
+    def sauvegarder_transactionnel(self, users: list, bib_filepath: str, users_filepath: str) -> None:
+        """Attempt to save both bibliotheque (self) and users atomically: write both temp files then replace.
+
+        Note: atomicity across two files is best-effort — the function ensures both temp writes succeed before replacing.
+        """
+        bib_p = Path(bib_filepath)
+        users_p = Path(users_filepath)
+        try:
+            bib_p.parent.mkdir(parents=True, exist_ok=True)
+            users_p.parent.mkdir(parents=True, exist_ok=True)
+
+            bib_data = {
+                "livres": [livre.to_dict() for livre in self.livres],
+                "reservations": getattr(self, "reservations", {}),
+            }
+            users_data = [u.to_dict() for u in users]
+
+            # write both temp files
+            bib_dir = str(bib_p.parent)
+            users_dir = str(users_p.parent)
+            with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=bib_dir, delete=False) as tf_bib:
+                json.dump(bib_data, tf_bib, ensure_ascii=False, indent=2)
+                tf_bib.flush(); os.fsync(tf_bib.fileno())
+            with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=users_dir, delete=False) as tf_users:
+                json.dump(users_data, tf_users, ensure_ascii=False, indent=2)
+                tf_users.flush(); os.fsync(tf_users.fileno())
+
+            # both temp writes succeeded — replace targets
+            os.replace(tf_bib.name, str(bib_p))
+            os.replace(tf_users.name, str(users_p))
+        except Exception as e:
+            # cleanup temp files if they exist
+            try:
+                if 'tf_bib' in locals() and tf_bib and Path(tf_bib.name).exists():
+                    os.remove(tf_bib.name)
+            except Exception:
+                pass
+            try:
+                if 'tf_users' in locals() and tf_users and Path(tf_users.name).exists():
+                    os.remove(tf_users.name)
+            except Exception:
+                pass
+            raise ErreurFichier(f"Erreur lors de la sauvegarde transactionnelle: {e}")
+
+    def reconcile_reservations(self, users: list, persist: bool = False, users_path: str | None = None, bib_path: str | None = None) -> None:
+        """Reconcile reservation queues between the library and the provided users list.
+
+        - Remove usernames from bibliotheque.reservations that are not present in users.
+        - Ensure each user's reservations are represented in bibliotheque.reservations.
+        If persist is True, save both users and bib to provided paths (users_path, bib_path).
+        """
+        # build set of valid usernames
+        valid_usernames = {getattr(u, 'username', None) for u in users}
+        # clean invalid entries in bib reservations
+        for isbn, queue in list(getattr(self, 'reservations', {}).items()):
+            newq = [u for u in queue if u in valid_usernames]
+            self.reservations[isbn] = newq
+        # ensure user's reservations are in bib queues
+        for u in users:
+            for r in getattr(u, 'reservations', []):
+                isbn = getattr(r, 'isbn', None)
+                if not isbn:
+                    continue
+                q = self.reservations.setdefault(isbn, [])
+                if u.username not in q:
+                    q.append(u.username)
+        # optionally persist
+        if persist:
+            if users_path:
+                BibliothequeAvecFichier.sauvegarder_users(users, users_path)
+            if bib_path:
+                self.sauvegarder(bib_path)

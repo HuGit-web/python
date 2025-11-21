@@ -1,32 +1,50 @@
-[
-  {
-    "type": "Livre",
-    "titre": "Harry Potter ",
-    "auteur": "J.K. Rowling ",
-    "ISBN": "9780747532743 "
-  },
-  {
-    "type": "Livre",
-    "titre": "Les Rois maudits ",
-    "auteur": "Maurice Druon ",
-    "ISBN": "9782253005553 "
-  },
-  {
-    "type": "Livre",
-    "titre": "King in yellow ",
-    "auteur": "Stephen King ",
-    "ISBN": "9781501142970 "
-  },
-  {
-    "type": "Livre",
-    "titre": "Pokemon",
-    "auteur": "Myamoto",
-    "ISBN": "56454565874"
-  },
-  {
-    "type": "Livre",
-    "titre": "Le Petit Prince",
-    "auteur": "Antoine Saint-Exupéry",
-    "ISBN": "9783140464079"
-  }
-]
+{
+  "livres": [
+    {
+      "type": "Livre",
+      "titre": "Harry Potter ",
+      "auteur": "J.K. Rowling ",
+      "ISBN": "9780747532743 ",
+      "exemplaire_id": null,
+      "etat": "disponible",
+      "history": []
+    },
+    {
+      "type": "Livre",
+      "titre": "Les Rois maudits ",
+      "auteur": "Maurice Druon ",
+      "ISBN": "9782253005553 ",
+      "exemplaire_id": null,
+      "etat": "disponible",
+      "history": []
+    },
+    {
+      "type": "Livre",
+      "titre": "King in yellow ",
+      "auteur": "Stephen King ",
+      "ISBN": "9781501142970 ",
+      "exemplaire_id": null,
+      "etat": "disponible",
+      "history": []
+    },
+    {
+      "type": "Livre",
+      "titre": "Pokemon",
+      "auteur": "Myamoto",
+      "ISBN": "56454565874",
+      "exemplaire_id": null,
+      "etat": "disponible",
+      "history": []
+    },
+    {
+      "type": "Livre",
+      "titre": "Le Petit Prince",
+      "auteur": "Antoine Saint-Exupéry",
+      "ISBN": "9783140464079",
+      "exemplaire_id": null,
+      "etat": "disponible",
+      "history": []
+    }
+  ],
+  "reservations": {}
+}

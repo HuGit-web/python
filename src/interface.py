@@ -10,6 +10,8 @@ except Exception:
     from src.models import Livre, LivreNumerique
     from src.file_manager import BibliothequeAvecFichier
 from typing import Optional
+from .file_manager import BibliothequeAvecFichier
+from .file_manager import BibliothequeAvecFichier as _BM
 
 def create_demo_library() -> BibliothequeAvecFichier:
     b = BibliothequeAvecFichier("Demo Bibliotheque")
@@ -95,6 +97,23 @@ def run_tp1_demo() -> None:
         print(f"Erreur chargement: {e}")
     else:
         ma_bibliotheque.afficher()
+
+
+def create_demo_users():
+    from .users import User
+    u1 = User.create("alice", "password123", subscription_type="basique")
+    u2 = User.create("bob", "securepwd", subscription_type="premium")
+    u2.is_admin = True
+    return [u1, u2]
+
+
+def save_users(users, path: str) -> None:
+    # uses file_manager helper
+    BibliothequeAvecFichier.sauvegarder_users(users, path)
+
+
+def load_users(path: str):
+    return BibliothequeAvecFichier.charger_users(path)
 
 if __name__ == "__main__":
     main_demo()

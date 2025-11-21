@@ -9,9 +9,6 @@ from src.interface import (
 
 from src.gui import run_gui
 
-from chat.server import start_server
-from chat.client import start_client
-
 
 def _choose_mode():
     print("\n====================================")
@@ -19,9 +16,7 @@ def _choose_mode():
     print("====================================")
     print("1) Mode Démo (CLI)")
     print("2) Interface Graphique (Bibliothèque)")
-    print("3) Démarrer le serveur de chat")
-    print("4) Démarrer un client de chat")
-    print("5) Quitter")
+    print("3) Quitter")
     print("====================================")
     return input("Votre choix : ").strip()
 
@@ -56,6 +51,21 @@ def main_cli():
         bibliotheque_rechargee.afficher()
     except Exception as e:
         print(f"Erreur lors du chargement : {e}")
+    # demo users persistence
+    from src.interface import create_demo_users, save_users, load_users
+    users_path = data_dir / "users.json"
+    users = create_demo_users()
+    try:
+        save_users(users, str(users_path))
+        print(f"Users sauvegardes dans '{users_path}'")
+    except Exception as e:
+        print(f"Erreur sauvegarde users: {e}")
+
+    try:
+        loaded = load_users(str(users_path))
+        print(f"Users charges: {[u.username for u in loaded]}")
+    except Exception as e:
+        print(f"Erreur chargement users: {e}")
 
 
 if __name__ == "__main__":
@@ -69,14 +79,6 @@ if __name__ == "__main__":
             run_gui()
 
         elif choice == "3":
-            print("\n[Démarrage du serveur de chat...]")
-            start_server()   # boucle infinie → CTRL+C pour arrêter
-
-        elif choice == "4":
-            print("\n[Démarrage du client de chat...]")
-            start_client()
-
-        elif choice == "5":
             print("\nFermeture du programme.")
             break
 
