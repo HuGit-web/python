@@ -1,5 +1,7 @@
 Projet : Application de gestion de bibliothèque
 
+J'ai travailler en colaboration avec Ysmahel Costedoat-Descouzeres
+
 Petit projet Python (CLI + GUI Tkinter) pour gérer une bibliothèque : livres, exemplaires,
 utilisateurs, prêts, réservations et persistances simples en JSON.
 
