@@ -1,16 +1,8 @@
 from pathlib import Path
-import sys
-try:
-    from .models import AggregatedLivre as Livre, LivreNumerique
-    from .file_manager import BibliothequeAvecFichier
-except Exception:
-    project_root = Path(__file__).resolve().parents[1]
-    if str(project_root) not in sys.path:
-        sys.path.insert(0, str(project_root))
-    from src.models import AggregatedLivre as Livre, LivreNumerique
-    from src.file_manager import BibliothequeAvecFichier
 from typing import Optional
+from .models import AggregatedLivre as Livre, LivreNumerique
 from .file_manager import BibliothequeAvecFichier
+from .utils import get_data_dir
 from .file_manager import BibliothequeAvecFichier as _BM
 
 def create_demo_library() -> BibliothequeAvecFichier:
@@ -38,9 +30,7 @@ def main_demo() -> None:
 
 def run_tp1_demo() -> None:
     
-    project_root = Path(__file__).resolve().parent.parent
-    data_dir = project_root / "data"
-    data_dir.mkdir(parents=True, exist_ok=True)
+    data_dir = get_data_dir()
 
     ma_bibliotheque = BibliothequeAvecFichier("Le tiroire")
 

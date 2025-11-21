@@ -62,12 +62,20 @@
         "date_retour_prevue": "2025-12-12",
         "date_retour_effective": "2025-11-21",
         "penalite_acquise": 0.0
+      },
+      {
+        "isbn": "9780747532743",
+        "exemplaire_id": null,
+        "date_emprunt": "2025-11-21",
+        "date_retour_prevue": "2025-12-12",
+        "date_retour_effective": "2025-11-21",
+        "penalite_acquise": 0.0
       }
     ],
     "reservations": [],
     "penalites": 0.0,
     "notifications": [],
-    "monthly_emprunts": 2,
+    "monthly_emprunts": 3,
     "last_reset": "2025-11-01"
   }
 ]

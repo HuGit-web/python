@@ -6,9 +6,10 @@ from typing import Optional
 from .file_manager import BibliothequeAvecFichier
 from .models import AggregatedLivre
 from .users import User
+from .utils import get_data_dir
 
 
-DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+DATA_DIR = get_data_dir()
 DATA_FILE = DATA_DIR / "bib.json"
 USERS_FILE = DATA_DIR / "users.json"
 
@@ -22,7 +23,7 @@ class BibliothequeApp(tk.Tk):
 
         self.data_file = data_file
         self.users_file = users_file
-        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        # `get_data_dir()` already ensures the directory exists
 
         self.biblio = BibliothequeAvecFichier("Mes livres")
         try:

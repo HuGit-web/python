@@ -18,6 +18,15 @@
           "date_retour_effective": null,
           "penalite_acquise": 0.0,
           "username": "hugo"
+        },
+        {
+          "isbn": "9780747532743",
+          "exemplaire_id": null,
+          "date_emprunt": "2025-11-21",
+          "date_retour_prevue": "2025-12-12",
+          "date_retour_effective": null,
+          "penalite_acquise": 0.0,
+          "username": "hugo"
         }
       ],
       "exemplaires": {
@@ -193,6 +202,15 @@
           "date_retour_effective": null,
           "penalite_acquise": 0.0,
           "username": "hugo"
+        },
+        {
+          "isbn": "56454565874",
+          "exemplaire_id": null,
+          "date_emprunt": "2025-11-21",
+          "date_retour_prevue": "2025-12-12",
+          "date_retour_effective": null,
+          "penalite_acquise": 0.0,
+          "username": "bob"
         },
         {
           "isbn": "56454565874",
