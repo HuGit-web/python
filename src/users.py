@@ -87,7 +87,6 @@ class User:
             return False
         if not self.subscription:
             return False
-        # reset monthly counter on the first of a new month
         today = date.today()
         if self.last_reset is None or (self.last_reset.year, self.last_reset.month) != (today.year, today.month):
             self.monthly_emprunts = 0
@@ -95,9 +94,7 @@ class User:
 
         sub_info = SUBSCRIPTIONS.get(self.subscription.type, SUBSCRIPTIONS["basique"])
         max_emprunts = sub_info["max_emprunts"]
-        # count active loans (no effective return date)
         active = sum(1 for l in self.loans if l.date_retour_effective is None)
-        # also ensure monthly limit not exceeded (we interpret max_emprunts as per-month cap too)
         return active < max_emprunts and self.monthly_emprunts < max_emprunts
 
     def borrow(self, isbn: str, exemplaire_id: Optional[str] = None) -> Loan:
@@ -108,7 +105,6 @@ class User:
         now = date.today()
         loan = Loan(isbn, exemplaire_id, now, now + timedelta(days=duree))
         self.loans.append(loan)
-        # increment monthly counter
         self.monthly_emprunts += 1
         return loan
 

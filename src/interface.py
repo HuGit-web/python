@@ -108,7 +108,6 @@ def create_demo_users():
 
 
 def save_users(users, path: str) -> None:
-    # uses file_manager helper
     BibliothequeAvecFichier.sauvegarder_users(users, path)
 
 

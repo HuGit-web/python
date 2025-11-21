@@ -51,7 +51,6 @@ def main_cli():
         bibliotheque_rechargee.afficher()
     except Exception as e:
         print(f"Erreur lors du chargement : {e}")
-    # demo users persistence
     from src.interface import create_demo_users, save_users, load_users
     users_path = data_dir / "users.json"
     users = create_demo_users()

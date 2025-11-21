@@ -24,7 +24,6 @@ class BibliothequeAvecFichier(Bibliotheque):
                 "livres": [livre.to_dict() for livre in self.livres],
                 "reservations": getattr(self, "reservations", {}),
             }
-            # atomic write: write to temp file then replace
             dirpath = str(p.parent)
             with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=dirpath, delete=False) as tf:
                 json.dump(data, tf, ensure_ascii=False, indent=2)
@@ -45,7 +44,6 @@ class BibliothequeAvecFichier(Bibliotheque):
             raise ErreurFichier(f"Format JSON invalide dans '{filepath}': {e}")
         except Exception as e:
             raise ErreurFichier(f"Impossible de lire '{filepath}': {e}")
-        # support new structure: { "livres": [...], "reservations": {ISBN: [usernames]} }
         self.livres.clear()
         livres_data = data.get("livres") if isinstance(data, dict) else data
         for livre_dic in livres_data:
@@ -64,7 +62,6 @@ class BibliothequeAvecFichier(Bibliotheque):
                     exemplaire_id=livre_dic.get("exemplaire_id"),
                     etat=livre_dic.get("etat", "disponible"),
                 )
-            # load history if present
             if livre_dic.get("history"):
                 try:
                     livre.history = livre_dic.get("history", [])
@@ -72,12 +69,10 @@ class BibliothequeAvecFichier(Bibliotheque):
                     livre.history = []
             self.livres.append(livre)
 
-        # load reservations if present
         self.reservations = {}
         if isinstance(data, dict):
             res = data.get("reservations")
             if isinstance(res, dict):
-                # ensure lists
                 for k, v in res.items():
                     self.reservations[k] = list(v)
 
@@ -100,7 +95,6 @@ class BibliothequeAvecFichier(Bibliotheque):
         except Exception as e:
             raise ErreurFichier(f"Impossible d'exporter CSV '{filepath}': {e}")
 
-    # --- Users persistence helpers ---
     @staticmethod
     def sauvegarder_users(users: list, filepath: str) -> None:
         p = Path(filepath)
@@ -133,13 +127,11 @@ class BibliothequeAvecFichier(Bibliotheque):
             try:
                 users.append(User.from_dict(ud))
             except Exception:
-                # skip malformed user entries
                 continue
         return users
 
     @staticmethod
     def notifier_user(username: str, message: str, users_filepath: str) -> None:
-        """Load users, add notification to the matching user, save back."""
         try:
             users = BibliothequeAvecFichier.charger_users(users_filepath)
         except ErreurFichier:
@@ -151,7 +143,6 @@ class BibliothequeAvecFichier(Bibliotheque):
                 updated = True
                 break
         if not updated:
-            # user not found: create a lightweight record
             from .users import User
             new = User(username, "")
             new.notifications.append(message)
@@ -159,10 +150,6 @@ class BibliothequeAvecFichier(Bibliotheque):
         BibliothequeAvecFichier.sauvegarder_users(users, users_filepath)
 
     def sauvegarder_transactionnel(self, users: list, bib_filepath: str, users_filepath: str) -> None:
-        """Attempt to save both bibliotheque (self) and users atomically: write both temp files then replace.
-
-        Note: atomicity across two files is best-effort — the function ensures both temp writes succeed before replacing.
-        """
         bib_p = Path(bib_filepath)
         users_p = Path(users_filepath)
         try:
@@ -175,7 +162,6 @@ class BibliothequeAvecFichier(Bibliotheque):
             }
             users_data = [u.to_dict() for u in users]
 
-            # write both temp files
             bib_dir = str(bib_p.parent)
             users_dir = str(users_p.parent)
             with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=bib_dir, delete=False) as tf_bib:
@@ -185,11 +171,9 @@ class BibliothequeAvecFichier(Bibliotheque):
                 json.dump(users_data, tf_users, ensure_ascii=False, indent=2)
                 tf_users.flush(); os.fsync(tf_users.fileno())
 
-            # both temp writes succeeded — replace targets
             os.replace(tf_bib.name, str(bib_p))
             os.replace(tf_users.name, str(users_p))
         except Exception as e:
-            # cleanup temp files if they exist
             try:
                 if 'tf_bib' in locals() and tf_bib and Path(tf_bib.name).exists():
                     os.remove(tf_bib.name)
@@ -209,13 +193,10 @@ class BibliothequeAvecFichier(Bibliotheque):
         - Ensure each user's reservations are represented in bibliotheque.reservations.
         If persist is True, save both users and bib to provided paths (users_path, bib_path).
         """
-        # build set of valid usernames
         valid_usernames = {getattr(u, 'username', None) for u in users}
-        # clean invalid entries in bib reservations
         for isbn, queue in list(getattr(self, 'reservations', {}).items()):
             newq = [u for u in queue if u in valid_usernames]
             self.reservations[isbn] = newq
-        # ensure user's reservations are in bib queues
         for u in users:
             for r in getattr(u, 'reservations', []):
                 isbn = getattr(r, 'isbn', None)
@@ -224,7 +205,6 @@ class BibliothequeAvecFichier(Bibliotheque):
                 q = self.reservations.setdefault(isbn, [])
                 if u.username not in q:
                     q.append(u.username)
-        # optionally persist
         if persist:
             if users_path:
                 BibliothequeAvecFichier.sauvegarder_users(users, users_path)

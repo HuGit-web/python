@@ -31,13 +31,11 @@ class BibliothequeApp(tk.Tk):
         except Exception:
             pass
 
-        # in-memory users list
         try:
             self.users = BibliothequeAvecFichier.charger_users(str(self.users_file))
         except Exception:
             self.users = []
 
-        # reconcile reservations between users and library, persist fixes
         try:
             self.biblio.reconcile_reservations(self.users, persist=True, users_path=str(self.users_file), bib_path=str(self.data_file))
         except Exception:
@@ -48,7 +46,6 @@ class BibliothequeApp(tk.Tk):
         self._build_ui()
         self._refresh_list()
 
-    # ---------------- UI ----------------
     def _build_ui(self):
         top = ttk.Frame(self, padding=8)
         top.pack(fill=tk.X)
@@ -62,7 +59,6 @@ class BibliothequeApp(tk.Tk):
         btn_refresh = ttk.Button(top, text="Rafraîchir livres", command=self._refresh_list)
         btn_refresh.pack(side=tk.LEFT, padx=4)
 
-        # left: books
         left = ttk.Frame(self)
         left.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=8, pady=8)
 
@@ -83,7 +79,6 @@ class BibliothequeApp(tk.Tk):
         books_action_frame.pack(fill=tk.X, pady=6)
         ttk.Button(books_action_frame, text="Emprunter le livre sélectionné", command=self._borrow_selected).pack(side=tk.LEFT, padx=4)
         ttk.Button(books_action_frame, text="Réserver le livre sélectionné", command=self._reserve_selected).pack(side=tk.LEFT, padx=4)
-        # admin actions (visible only for admins)
         self.admin_frame = ttk.Frame(left)
         self.admin_frame.pack(fill=tk.X, pady=6)
         ttk.Button(self.admin_frame, text="Ajouter exemplaire", command=self._admin_add_exemplar).pack(side=tk.LEFT, padx=4)
@@ -91,7 +86,6 @@ class BibliothequeApp(tk.Tk):
         ttk.Button(self.admin_frame, text="Marquer exemplaire endommagé", command=self._admin_mark_damaged).pack(side=tk.LEFT, padx=4)
         ttk.Button(self.admin_frame, text="Stats bibliothèque", command=self._admin_show_stats).pack(side=tk.LEFT, padx=4)
 
-        # right: user panel
         right = ttk.Frame(self, width=340)
         right.pack(side=tk.RIGHT, fill=tk.Y, padx=8, pady=8)
         ttk.Label(right, text="Utilisateur connecté:").pack(anchor=tk.W)
